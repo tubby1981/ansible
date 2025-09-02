@@ -1,0 +1,33 @@
+---
+galaxy_info:
+  role_name: foomuuri
+  author: Your Name
+  description: Ansible role for managing Foomuuri multizone bidirectional nftables firewall
+  company: Your Organization
+  license: MIT
+  min_ansible_version: '2.9'
+  
+  platforms:
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+        - trixie
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+        - noble
+        - mantic
+    - name: ArchLinux
+      versions:
+        - any
+
+  galaxy_tags:
+    - firewall
+    - nftables
+    - security
+    - networking
+    - foomuuri
+
+dependencies: []

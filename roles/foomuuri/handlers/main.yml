@@ -1,0 +1,31 @@
+---
+# handlers file for foomuuri
+
+- name: validate foomuuri config
+  command: /usr/sbin/foomuuri check
+  environment:
+    PATH: "/usr/sbin:/usr/bin:/sbin:/bin"
+  listen: "validate foomuuri config"  
+
+- name: restart foomuuri
+  systemd:
+    name: foomuuri
+    state: restarted
+    daemon_reload: yes
+  listen: "restart foomuuri"
+
+- name: reload foomuuri
+  command: /usr/sbin/foomuuri reload
+  listen: "reload foomuuri"
+
+- name: stop foomuuri
+  systemd:
+    name: foomuuri
+    state: stopped
+  listen: "stop foomuuri"
+
+- name: start foomuuri
+  systemd:
+    name: foomuuri
+    state: started
+  listen: "start foomuuri"

@@ -1,0 +1,49 @@
+---
+- name: Generate Foomuuri configuration
+  template:
+    src: foomuuri.conf.j2
+    dest: "{{ foomuuri_config_path | default('/etc/foomuuri') }}/foomuuri.conf"
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  notify: 
+    - validate foomuuri config
+    - restart foomuuri
+  register: foomuuri_config_result
+
+- name: Create raw nftables rule files
+  copy:
+    content: "{{ item.content }}"
+    dest: "{{ foomuuri_config_path | default('/etc/foomuuri') }}/{{ item.name }}"
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  loop: "{{ foomuuri_raw_nft_files + foomuuri_extra_raw_nft_files }}"
+  when: foomuuri_raw_nft_files or foomuuri_extra_raw_nft_files
+  notify:
+    - validate foomuuri config
+    - restart foomuuri
+
+- name: Ensure systemd service is enabled
+  systemd:
+    name: "{{ foomuuri_service_name | default('foomuuri') }}"
+    enabled: yes
+    daemon_reload: yes
+
+- name: Start Foomuuri service (if config changed)
+  systemd:
+    name: "{{ foomuuri_service_name | default('foomuuri') }}"
+    state: started
+  when: foomuuri_config_result is changed
+
+- name: Ensure Foomuuri service is running
+  systemd:
+    name: "{{ foomuuri_service_name | default('foomuuri') }}"
+    state: started
+  register: foomuuri_service_status
+
+- name: Display service status
+  debug:
+    msg: "Foomuuri service is {{ foomuuri_service_status.status.ActiveState }}"

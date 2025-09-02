@@ -1,0 +1,67 @@
+---
+# host_vars/arch-server.yml - Arch Linux specific configuration
+
+# Force AUR installation method (optional, auto-detection works)
+foomuuri_install_method: "aur"
+
+# Specify AUR helper (optional)
+foomuuri_aur_helper: "yay"  # or paru, trizen, makepkg
+
+# Basic zones for Arch server
+foomuuri_extra_zones:
+  - name: "external"
+    interfaces: ["enp0s3"]
+  - name: "internal"
+    interfaces: ["enp0s8"]
+
+# Arch-specific monitoring (e.g., using built-in services)
+foomuuri_monitoring_enabled: true
+foomuuri_monitoring_services:
+  - name: "prometheus-node"
+    port: "tcp 9100"
+    sources:
+      internal: ["10.0.0.100"]
+  - name: "snmp"
+    sources:
+      internal: ["10.0.0.0/24"]
+
+# Management access
+foomuuri_management_enabled: true
+foomuuri_management_sources:
+  - "10.0.0.0/24"
+  - "192.168.1.0/24"
+
+# Custom templates for Arch services
+foomuuri_extra_templates:
+  arch_services:
+    description: "Common Arch Linux services"
+    rules:
+      - "ssh"
+      - "ping" 
+      - "prometheus-node tcp 9100"
+      - "snmp"
+
+# Zone policies
+foomuuri_extra_zone_policies:
+  - from_zone: "external"
+    to_zone: "localhost"
+    rules:
+      - "ssh saddr management-sources"
+      - "ping"
+      - "drop log"
+  
+  - from_zone: "internal"
+    to_zone: "localhost"
+    rules:
+      - "template arch_services saddr management-sources"
+      - "drop log"
+  
+  - from_zone: "localhost"
+    to_zone: "external"
+    rules:
+      - "accept"
+      
+  - from_zone: "localhost" 
+    to_zone: "internal"
+    rules:
+      - "accept"

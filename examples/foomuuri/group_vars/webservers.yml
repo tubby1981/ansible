@@ -1,0 +1,74 @@
+---
+# group_vars/webservers.yml - Common configuration for all web servers
+
+# Global Foomuuri configuration for web servers
+foomuuri_config:
+  log_input: "yes"
+  log_output: "no"
+  log_forward: "yes"
+  rpfilter: "yes"
+  counter: "no"
+
+# Common macros for all web servers
+foomuuri_extra_macros:
+  - name: "loadbalancer-ips"
+    rules: "10.0.1.10 10.0.1.11"
+  - name: "monitoring-ips"
+    rules: "10.0.2.10 10.0.2.11"
+  - name: "backup-server"
+    rules: "10.0.3.100"
+
+# Common templates
+foomuuri_extra_templates:
+  web_stack:
+    description: "Complete web application stack"
+    rules:
+      - "http"
+      - "https"
+      - "ssh saddr monitoring-ips"
+      - "snmp saddr monitoring-ips"
+  
+  backup_services:
+    description: "Backup and maintenance services"
+    rules:
+      - "rsync saddr backup-server"
+      - "ssh saddr backup-server"
+
+# Default policies for web servers
+foomuuri_extra_zone_policies:
+  - from_zone: "public" 
+    to_zone: "localhost"
+    rules:
+      - "template web_stack"
+      - "template backup_services" 
+      - "drop log"
+      
+  - from_zone: "localhost"
+    to_zone: "public"
+    rules:
+      - "accept"
+
+# Enable generic monitoring for all web servers  
+foomuuri_monitoring_enabled: true
+foomuuri_monitoring_services:
+  - name: "web-monitoring"
+    port: "tcp 8080"
+    sources:
+      public: ["203.0.113.50", "203.0.113.51"]
+      management: ["10.0.2.50", "10.0.2.51"]
+  - name: "snmp"
+    sources:
+      management: ["10.0.2.0/24"]
+
+foomuuri_management_enabled: true  
+foomuuri_management_sources:
+  - "10.0.2.0/24"
+  - "192.168.100.0/24"
+
+# Common iplists
+foomuuri_extra_iplists:
+  "@company_offices":
+    - "203.0.113.0/24"
+    - "198.51.100.0/24"
+  "@cdn_providers":
+    - "https://api.cloudflare.com/client/v4/ips"

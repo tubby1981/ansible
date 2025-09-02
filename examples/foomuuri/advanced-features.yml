@@ -1,0 +1,217 @@
+---
+# examples/advanced-features.yml
+# Advanced Foomuuri configuration examples
+
+# Example 1: NAT Gateway Configuration
+nat_gateway_config:
+  # SNAT rules for outgoing traffic masquerading
+  foomuuri_snat_rules:
+    - "saddr 10.0.0.0/8 oifname eth0 masquerade"
+    - "saddr 192.168.0.0/16 oifname eth1 snat to 203.0.113.10"
+    - "saddr fd00:f00:4444::/64 oifname eth2 snat_prefix to 2a03:1111:222:8888::/64"
+  
+  # DNAT rules for incoming traffic port forwarding  
+  foomuuri_dnat_rules:
+    - "daddr 203.0.113.10 http dnat to 10.0.0.10:8080"
+    - "daddr 203.0.113.10 https dnat to 10.0.0.10:8443"
+    - "daddr 203.0.113.10 ssh dnat to 10.0.0.20:22"
+    - "iifname eth1 daddr 203.0.113.11 dnat to 10.0.0.11"
+
+# Example 2: VPN Server with Zone Mapping
+vpn_server_config:
+  foomuuri_extra_zones:
+    - name: "vpn"
+      interfaces: ["wg0", "tun0"]
+  
+  # Map IPsec traffic to VPN zone
+  foomuuri_zonemap_rules:
+    - "dipsec dzone public new_dzone vpn"
+    - "sipsec szone public new_szone vpn"
+    - "saddr 10.8.0.0/24 szone public new_szone vpn"
+  
+  foomuuri_extra_zone_policies:
+    - from_zone: "vpn"
+      to_zone: "localhost"
+      rules:
+        - "ssh"
+        - "ping"
+        - "drop log"
+    - from_zone: "localhost"
+      to_zone: "vpn"
+      rules:
+        - "accept"
+
+# Example 3: Load Balancer with Traffic Marking
+loadbalancer_config:
+  # Mangle rules for traffic shaping
+  foomuuri_mangle_rules:
+    prerouting:
+      - "mark_match -0x0000/0xff00 accept"
+      - "mark_set 0x100/0xff00"
+      - "iifname eth2 mark_set 0x200/0xff00"
+      - "iifname eth2 ssh mark_set 0x300/0xff00"
+    postrouting:
+      - "oifname eth0 mark_set 0x400/0xff00"
+  
+  # Special handling for invalid packets (IPVS)
+  foomuuri_special_chain_rules:
+    invalid:
+      - "https"
+      - "http"
+    rpfilter:
+      - "log prefix 'RPFILTER-DROP: '"
+
+# Example 4: Multi-Zone Corporate Network
+corporate_network_config:
+  foomuuri_extra_zones:
+    - name: "dmz"
+      interfaces: ["eth1"]
+    - name: "internal"
+      interfaces: ["eth2"]
+    - name: "guest"
+      interfaces: ["eth3"]
+  
+  # Global any-zone rules processed first
+  foomuuri_any_zone_rules:
+    "any-localhost":
+      - "ssh saddr 10.0.100.0/24"  # Admin network
+      - "ping"
+    "localhost-any":
+      - "domain"
+      - "ntp"
+      - "ping"
+  
+  foomuuri_extra_zone_policies:
+    - from_zone: "dmz"
+      to_zone: "internal"
+      rules:
+        - "mysql saddr 10.1.0.0/24"
+        - "postgresql saddr 10.1.0.0/24"
+        - "drop log"
+    - from_zone: "guest"
+      to_zone: "localhost"
+      rules:
+        - "domain"
+        - "http"
+        - "https"
+        - "drop log"
+
+# Example 5: Dynamic IP Lists and Monitoring
+dynamic_security_config:
+  # Advanced iplist configuration with global settings
+  foomuuri_iplist_global_settings:
+    dns_refresh: "15m"
+    dns_timeout: "24h"
+    url_refresh: "1d"
+    url_timeout: "10d"
+  
+  foomuuri_iplists:
+    "@trusted_hosts":
+      - "trusted.example.com"
+      - "backup.example.org"
+    "@country_fi":
+      - "https://raw.githubusercontent.com/ipverse/rir-ip/master/country/fi/ipv4-aggregated.txt"
+      - "https://raw.githubusercontent.com/ipverse/rir-ip/master/country/fi/ipv6-aggregated.txt"
+    "@blacklist":
+      - "/etc/foomuuri/blacklist.txt"
+    "@github_actions":
+      - "https://api.github.com/meta|json:.actions[]"
+    "@cdn_cloudflare":
+      - "https://www.cloudflare.com/ips-v4|missing-ok"
+      - "https://www.cloudflare.com/ips-v6|missing-ok"
+  
+  # Network connectivity monitoring
+  foomuuri_monitor_targets:
+    - name: "gateway"
+      target: "192.168.1.1"
+      interval: "30s"
+    - name: "dns_primary"
+      target: "8.8.8.8"
+      interval: "60s"
+    - name: "web_service"
+      target: "203.0.113.10"
+      interval: "120s"
+  
+  foomuuri_extra_zone_policies:
+    - from_zone: "public"
+      to_zone: "localhost"
+      rules:
+        - "ssh saddr @trusted_hosts"
+        - "https saddr @country_fi saddr_rate '10/minute burst 20'"
+        - "http saddr @blacklist drop log 'BLACKLIST-DROP'"
+        - "https saddr @github_actions"
+        - "drop log"
+
+# Example 6: Custom Raw nftables Rules
+advanced_nftables_config:
+  foomuuri_raw_nft_files:
+    - name: "custom-qos.nft"
+      content: |
+        # Custom QoS rules
+        table inet qos {
+          chain prerouting {
+            type filter hook prerouting priority -150; policy accept;
+            # Mark high priority traffic
+            tcp dport {22, 53, 853} mark set 0x1
+            # Mark low priority traffic  
+            tcp dport {80, 443} mark set 0x2
+          }
+        }
+    - name: "rate-limiting.nft"
+      content: |
+        # Advanced rate limiting
+        table inet ratelimit {
+          set ssh_bruteforce {
+            type ipv4_addr
+            flags dynamic, timeout
+            timeout 1h
+          }
+          
+          chain input {
+            type filter hook input priority -50; policy accept;
+            tcp dport 22 add @ssh_bruteforce {ip saddr limit rate 3/minute burst 3 packets}
+            tcp dport 22 ip saddr @ssh_bruteforce drop
+          }
+        }
+
+# Example 7: Service-Based User Isolation
+user_isolation_config:
+  # Map different users to different zones
+  foomuuri_zonemap_rules:
+    - "uid web szone localhost new_szone web-user"
+    - "uid database szone localhost new_szone db-user"
+    - "gid developers szone localhost new_szone dev-zone"
+  
+  foomuuri_extra_zones:
+    - name: "web-user"
+    - name: "db-user"  
+    - name: "dev-zone"
+  
+  foomuuri_extra_zone_policies:
+    - from_zone: "web-user"
+      to_zone: "public"
+      rules:
+        - "http"
+        - "https"
+        - "domain"
+        - "drop log"
+    - from_zone: "db-user"
+      to_zone: "internal"
+      rules:
+        - "mysql"
+        - "postgresql"
+        - "drop log"
+
+# Example 8: Hook Commands for Integration
+integration_config:
+  foomuuri_hooks:
+    pre_start: "/usr/local/bin/firewall-backup.sh"
+    post_start: "/usr/local/bin/notify-firewall-started.sh"
+    pre_stop: "/usr/local/bin/firewall-maintenance.sh"
+    post_stop: "/usr/local/bin/cleanup-firewall.sh"
+
+# How to use these examples:
+# 1. Copy relevant sections to your group_vars or host_vars
+# 2. Combine multiple examples as needed
+# 3. Adjust IP addresses, interfaces, and rules to match your environment
+# 4. Test configuration with 'foomuuri check' before applying

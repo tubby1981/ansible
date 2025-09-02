@@ -1,0 +1,23 @@
+# niet committen
+host_vars/*
+group_vars/*
+
+# Python cache-bestanden
+**/__pycache__/
+*.py[cod]
+
+# LibreOffice lock files
+*.~lock.*#
+
+# Ignore Vim/Neovim swap files
+*.swp
+
+# Igonore Environment file
+.env
+
+# Ignore status files
+*.txt
+*.log
+*.old
+*.back
+*.bck

@@ -1,0 +1,290 @@
+---
+# defaults file for foomuuri
+
+# Package configuration
+foomuuri_required_packages:
+  Debian: 
+    - python3
+    - python3-requests
+    - python3-dbus
+    - python3-gi
+    - python3-systemd
+  RedHat:
+    - python3
+    - python3-requests
+    - python3-dbus
+    - python3-gobject
+    - python3-systemd
+  Archlinux:
+    - python
+    - python-requests
+    - python-dbus
+    - python-gobject
+    - python-systemd
+    - nftables
+
+foomuuri_package: "foomuuri"
+foomuuri_firewalld_package: "foomuuri-firewalld"
+
+# Installation method: auto, package, aur, github
+# auto = determine based on OS version and distribution  
+foomuuri_install_method: "auto"
+
+# AUR helper (for Arch Linux)
+foomuuri_aur_helper: "makepkg"  # Options: makepkg, yay, paru, trizen
+
+# Foomuuri global configuration
+# Only set values that differ from Foomuuri defaults
+# See: https://github.com/FoobarOy/foomuuri/wiki/Configuration#foomuuri
+foomuuri_config: {}
+# Example:
+# foomuuri_config:
+#   log_input: "yes"
+#   log_output: "no"
+#   rpfilter: "yes"
+
+# Zone configuration
+# Minimal zone setup - localhost is always required and must be empty
+foomuuri_zones:
+  - name: "public"
+    interfaces: 
+      - "{{ ansible_default_ipv4.interface | default('eth0') }}"
+
+# Extra zones (use in host_vars/group_vars)
+foomuuri_extra_zones: []
+# Example:
+# foomuuri_extra_zones:
+#   - name: "dmz"
+#     interfaces: ["eth1"]
+#   - name: "internal"
+#     interfaces: ["eth2", "eth3"]
+
+# Monitoring services configuration (optional)
+# Generic monitoring system support - configure in host_vars/group_vars
+foomuuri_monitoring_enabled: false
+foomuuri_monitoring_services: []
+# Example:
+# foomuuri_monitoring_enabled: true
+# foomuuri_monitoring_services:
+#   - name: "nagios"
+#     port: "tcp 5666"
+#     sources:
+#       public: ["203.0.113.10"]
+#       management: ["10.0.0.10"]
+#   - name: "snmp"
+#     port: "udp 161"
+#     sources:
+#       management: ["10.0.0.0/8"]
+
+# Management access configuration
+foomuuri_management_enabled: false
+foomuuri_management_services: ["ssh", "ping"]
+foomuuri_management_sources: []
+# Example:
+# foomuuri_management_enabled: true
+# foomuuri_management_sources:
+#   - "192.168.1.0/24"
+#   - "10.0.0.0/8"
+
+# Macro definitions
+# Built-in service macros are available in /usr/share/foomuuri/default.services.conf
+foomuuri_macros: []
+# Example:
+# foomuuri_macros:
+#  # Trusted SSH IPv4
+#  - name: "ssh-ipv4-clients"
+#    ips: ["192.168.1.0/24", "10.0.0.0/8", "203.0.113.10"]
+#  # Mail Services
+#  - name: "mail-services"
+#    protocols: 
+#      tcp: [143, 587, 993, 995, 9001]
+#  # Block NetBIOS
+#  - name: "netbios"
+#    protocols: 
+#      tcp: [139, 445]
+#      udp: [137, 138]
+#   # Combining existing macros
+#   - name: "monitoring-services"
+#     use_macros: ["checkmk-agent", "snmp", "ping"]
+
+# Custom macros (use in host_vars/group_vars)
+foomuuri_extra_macros: []
+# Examples:
+# foomuuri_extra_macros:
+#   # Services with protocols and ports
+#   - name: "checkmk-agent"
+#     protocols: 
+#       tcp: [6556]
+#   - name: "test"
+#     protocols: 
+#       tcp: [8080, 8443]
+#       udp: [8080, 8443]
+#   # IP addresses, subnets and ranges
+#   - name: "trusted-ips"
+#     ips: ["192.168.1.0/24", "10.0.0.0/8", "203.0.113.10"]
+#   # Combining existing macros
+#   - name: "monitoring-services"
+#     use_macros: ["checkmk-agent", "snmp", "ping"]
+
+# Template definitions
+foomuuri_templates: {}
+# Monitoring templates are auto-generated when monitoring is enabled
+
+# Extra templates (use in host_vars/group_vars)
+foomuuri_extra_templates: {}
+# Example:
+# foomuuri_extra_templates:
+#   web_services:
+#     description: "Common web services"
+#     rules:
+#       - "http"
+#       - "https"
+#   database_access:
+#     description: "Database services"
+#     rules:
+#       - "mysql saddr trusted-sources"
+#       - "postgresql saddr trusted-sources"
+
+# Zone policies
+# Define traffic rules between zones
+foomuuri_zone_policies: []
+
+# Default policy for localhost (if no custom policies defined)
+foomuuri_default_localhost_policy:
+  - from_zone: "public"
+    to_zone: "localhost"
+    rules:
+      - "ping"
+      - "ssh"
+      - "drop log"
+
+# Extra zone policies (use in host_vars/group_vars)
+foomuuri_extra_zone_policies: []
+# Example:
+# foomuuri_extra_zone_policies:
+#   - from_zone: "public"
+#     to_zone: "localhost"
+#     rules:
+#       - "http"
+#       - "https"
+#       - "ssh saddr trusted-nets"
+#       - "drop log"
+#   - from_zone: "localhost"
+#     to_zone: "public"  
+#     rules:
+#       - "accept"
+
+# IPlist configuration (for dynamic IP management)
+foomuuri_iplists: {}
+# Example:
+# foomuuri_iplists:
+#   "@trusted": ["example.com", "trusted.example.org"]
+#   "@blocklist": ["/etc/foomuuri/blocklist.txt"]
+
+foomuuri_extra_iplists: {}
+
+# SNAT/DNAT configuration
+foomuuri_snat_rules: []
+# Example:
+# foomuuri_snat_rules:
+#   - "saddr 10.0.0.0/8 oifname eth0 masquerade"
+#   - "saddr 192.168.0.0/16 oifname eth1 snat to 203.0.113.10"
+#   - "saddr fd00:f00:4444::/64 oifname eth2 snat_prefix to 2a03:1111:222:8888::/64"
+
+foomuuri_dnat_rules: []
+# Example:
+# foomuuri_dnat_rules:
+#   - "daddr 203.0.113.10 http dnat to 10.0.0.10:8080"
+#   - "daddr 203.0.113.10 https dnat to 10.0.0.10:8443"
+#   - "iifname eth1 daddr 203.0.113.11 dnat to 10.0.0.11"
+
+foomuuri_extra_snat_rules: []
+foomuuri_extra_dnat_rules: []
+
+# Zonemap configuration (for advanced routing)
+foomuuri_zonemap_rules: []
+# Example:
+# foomuuri_zonemap_rules:
+#   - "dipsec dzone public new_dzone vpn"
+#   - "sipsec szone public new_szone vpn"
+#   - "saddr 10.2.3.0/24 szone internal new_szone dmz"
+#   - "uid myservice szone localhost new_szone myzone"
+
+foomuuri_extra_zonemap_rules: []
+
+# any-zone, zone-any, any-any rules (processed before zone-zone)
+foomuuri_any_zone_rules: {}
+# Example:
+# foomuuri_any_zone_rules:
+#   "any-localhost":
+#     - "ssh"
+#     - "ping"
+#   "localhost-any":
+#     - "domain"
+#     - "ntp"
+
+foomuuri_extra_any_zone_rules: {}
+
+# Mangle rules (prerouting, postrouting, output, forward)
+foomuuri_mangle_rules: {}
+# Example:
+# foomuuri_mangle_rules:
+#   prerouting:
+#     - "mark_match -0x0000/0xff00 accept"
+#     - "mark_set 0x100/0xff00"
+#     - "iifname eth2 mark_set 0x200/0xff00"
+#   postrouting:
+#     - "oifname eth0 mark_set 0x300/0xff00"
+
+foomuuri_extra_mangle_rules: {}
+
+# Special chain rules (invalid, rpfilter, smurfs)
+foomuuri_special_chain_rules: {}
+# Example:
+# foomuuri_special_chain_rules:
+#   invalid:
+#     - "https"  # Accept HTTPS IPVS traffic
+#   rpfilter:
+#     - "log"    # Log rpfilter drops
+#   smurfs:
+#     - "log"    # Log smurf attacks
+
+foomuuri_extra_special_chain_rules: {}
+
+# Raw nftables rules (advanced users)
+foomuuri_raw_nft_files: []
+# Example:
+# foomuuri_raw_nft_files:
+#   - name: "custom-rules.nft"
+#     content: |
+#       # Custom nftables rules
+#       table inet filter {
+#         chain custom {
+#           type filter hook forward priority 0;
+#           # Your custom rules here
+#         }
+#       }
+
+foomuuri_extra_raw_nft_files: []
+
+# Advanced iplist configuration
+foomuuri_iplist_global_settings: {}
+# Example:
+# foomuuri_iplist_global_settings:
+#   dns_refresh: "15m"
+#   dns_timeout: "24h"
+#   url_refresh: "1d"
+#   url_timeout: "10d"
+
+# Network monitoring targets
+foomuuri_monitor_targets: []
+# Example:
+# foomuuri_monitor_targets:
+#   - name: "gateway"
+#     target: "192.168.1.1"
+#     interval: "30s"
+#   - name: "dns"
+#     target: "8.8.8.8"
+#     interval: "60s"
+
+foomuuri_extra_monitor_targets: []
