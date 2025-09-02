@@ -1,0 +1,13 @@
+namespace: ansible-servers
+name: linux
+version: 1.0.0
+readme: README.md
+authors:
+  - Tromp Wezelman
+license: MIT
+tags:
+  - linux
+  - servers
+  - foomuuri
+  - firewall
+dependencies: {}
