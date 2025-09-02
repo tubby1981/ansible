@@ -1,13 +1,19 @@
-namespace: ansible-servers
-name: linux
-version: 1.0.0
-readme: README.md
+namespace: "ansible-servers"
+name: "linuxsrv"
+version: "1.0.0"
+readme: "README.md"
 authors:
-  - Tromp Wezelman
-license: MIT
+  - "Tromp Wezelman"
+license: "MIT"
 tags:
   - linux
   - servers
   - foomuuri
   - firewall
 dependencies: {}
+
+# Voeg deze toe voor GitHub integratie:
+repository: "https://github.com/tubby1981/ansible"
+homepage: "https://github.com/tubby1981/ansible"
+issues: "https://github.com/tubby1981/ansible/issues"
+documentation: "https://github.com/tubby1981/ansible/blob/main/README.md"
