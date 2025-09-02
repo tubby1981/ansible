@@ -1,6 +1,5 @@
 ---
 # examples/advanced-features.yml
-# Advanced Foomuuri configuration examples
 
 # Example 1: NAT Gateway Configuration
 nat_gateway_config:
@@ -71,10 +70,20 @@ corporate_network_config:
     - name: "guest"
       interfaces: ["eth3"]
   
+  # Custom macros with new syntax
+  foomuuri_extra_macros:
+    - name: "admin-network"
+      ips: ["10.0.100.0/24"]
+    - name: "database-servers"
+      ips: ["10.1.0.0/24"]
+    - name: "database-services"
+      protocols:
+        tcp: [3306, 5432]  # MySQL and PostgreSQL
+  
   # Global any-zone rules processed first
   foomuuri_any_zone_rules:
     "any-localhost":
-      - "ssh saddr 10.0.100.0/24"  # Admin network
+      - "ssh saddr admin-network"
       - "ping"
     "localhost-any":
       - "domain"
@@ -85,8 +94,7 @@ corporate_network_config:
     - from_zone: "dmz"
       to_zone: "internal"
       rules:
-        - "mysql saddr 10.1.0.0/24"
-        - "postgresql saddr 10.1.0.0/24"
+        - "database-services saddr database-servers"
         - "drop log"
     - from_zone: "guest"
       to_zone: "localhost"
@@ -187,28 +195,27 @@ user_isolation_config:
     - name: "db-user"  
     - name: "dev-zone"
   
+  # Updated macros with new syntax
+  foomuuri_extra_macros:
+    - name: "web-services"
+      protocols:
+        tcp: [80, 443]
+    - name: "database-services"
+      protocols:
+        tcp: [3306, 5432]
+  
   foomuuri_extra_zone_policies:
     - from_zone: "web-user"
       to_zone: "public"
       rules:
-        - "http"
-        - "https"
+        - "web-services"
         - "domain"
         - "drop log"
     - from_zone: "db-user"
       to_zone: "internal"
       rules:
-        - "mysql"
-        - "postgresql"
+        - "database-services"
         - "drop log"
-
-# Example 8: Hook Commands for Integration
-integration_config:
-  foomuuri_hooks:
-    pre_start: "/usr/local/bin/firewall-backup.sh"
-    post_start: "/usr/local/bin/notify-firewall-started.sh"
-    pre_stop: "/usr/local/bin/firewall-maintenance.sh"
-    post_stop: "/usr/local/bin/cleanup-firewall.sh"
 
 # How to use these examples:
 # 1. Copy relevant sections to your group_vars or host_vars

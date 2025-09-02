@@ -8,14 +8,16 @@ foomuuri_extra_zones:
   - name: "internal"  
     interfaces: ["eth2"]
 
-# Custom macros for web services
+# Custom macros for web services - UPDATED SYNTAX
 foomuuri_extra_macros:
   - name: "web-ports"
-    rules: "tcp 80; tcp 443"
+    protocols:
+      tcp: [80, 443]
   - name: "admin-ips"
-    rules: "192.168.100.10 192.168.100.11"
+    ips: ["192.168.100.10", "192.168.100.11"]
   - name: "app-ports"
-    rules: "tcp 8080; tcp 8443"
+    protocols:
+      tcp: [8080, 8443]
 
 # Templates for reusable rule sets
 foomuuri_extra_templates:

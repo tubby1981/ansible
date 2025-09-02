@@ -1,5 +1,5 @@
 ---
-# group_vars/webservers.yml - Common configuration for all web servers
+# examples/group_vars/webservers.yml
 
 # Global Foomuuri configuration for web servers
 foomuuri_config:
@@ -9,14 +9,14 @@ foomuuri_config:
   rpfilter: "yes"
   counter: "no"
 
-# Common macros for all web servers
+# Common macros for all web servers - UPDATED SYNTAX
 foomuuri_extra_macros:
   - name: "loadbalancer-ips"
-    rules: "10.0.1.10 10.0.1.11"
+    ips: ["10.0.1.10", "10.0.1.11"]
   - name: "monitoring-ips"
-    rules: "10.0.2.10 10.0.2.11"
+    ips: ["10.0.2.10", "10.0.2.11"]
   - name: "backup-server"
-    rules: "10.0.3.100"
+    ips: ["10.0.3.100"]
 
 # Common templates
 foomuuri_extra_templates:

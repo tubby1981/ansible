@@ -1,6 +1,5 @@
 ---
-# examples/monitoring-systems.yml
-# Examples of how to configure specific monitoring systems
+# examples/monitoring-systems.yml - Updated with correct syntax
 
 # Example 1: CheckMK monitoring
 checkmk_monitoring:
@@ -14,6 +13,11 @@ checkmk_monitoring:
     - name: "snmp"
       sources:
         management: ["10.6.109.0/24"]
+  
+  # Updated macro syntax for CheckMK
+  foomuuri_extra_macros:
+    - name: "checkmk-sources"
+      ips: ["83.247.109.32", "83.247.109.43", "10.6.109.36", "10.6.109.43"]
 
 # Example 2: Observium monitoring  
 observium_monitoring:
@@ -27,6 +31,11 @@ observium_monitoring:
     - name: "snmp"
       sources:
         management: ["10.4.32.0/24"]
+  
+  # Updated macro syntax for Observium
+  foomuuri_extra_macros:
+    - name: "observium-servers"
+      ips: ["212.45.32.170", "10.4.32.170"]
 
 # Example 3: Nagios/Icinga monitoring
 nagios_monitoring:
@@ -39,6 +48,11 @@ nagios_monitoring:
     - name: "snmp"
       sources:
         management: ["10.0.1.0/24"]
+  
+  # Updated macro syntax for Nagios
+  foomuuri_extra_macros:
+    - name: "nagios-servers"
+      ips: ["10.0.1.100", "10.0.1.101"]
 
 # Example 4: Zabbix monitoring
 zabbix_monitoring:
@@ -51,6 +65,11 @@ zabbix_monitoring:
     - name: "snmp"
       sources:
         management: ["10.0.2.0/24"]
+  
+  # Updated macro syntax for Zabbix
+  foomuuri_extra_macros:
+    - name: "zabbix-servers"
+      ips: ["10.0.2.100", "10.0.2.101"]
 
 # Example 5: Prometheus monitoring  
 prometheus_monitoring:
@@ -64,6 +83,14 @@ prometheus_monitoring:
       port: "tcp 9115"
       sources:
         management: ["10.0.3.100"]
+  
+  # Updated macro syntax for Prometheus
+  foomuuri_extra_macros:
+    - name: "prometheus-server"
+      ips: ["10.0.3.100"]
+    - name: "prometheus-exporters"
+      protocols:
+        tcp: [9100, 9115]
 
 # Example 6: Multiple monitoring systems
 multi_monitoring:
@@ -80,6 +107,13 @@ multi_monitoring:
     - name: "snmp"
       sources:
         management: ["10.1.0.0/16"]
+  
+  # Combined monitoring macros
+  foomuuri_extra_macros:
+    - name: "all-monitoring-servers"
+      ips: ["10.1.1.10", "10.1.2.10"]
+    - name: "monitoring-services"
+      use_macros: ["checkmk-agent", "prometheus-node", "snmp"]
 
 # Example 7: Custom monitoring with templates
 custom_monitoring:
@@ -90,12 +124,20 @@ custom_monitoring:
       sources:
         management: ["192.168.10.0/24"]
   
+  # Custom monitoring macros
+  foomuuri_extra_macros:
+    - name: "custom-monitoring-net"
+      ips: ["192.168.10.0/24"]
+    - name: "custom-agent-port"
+      protocols:
+        tcp: [8765]
+  
   foomuuri_extra_templates:
     complete_monitoring:
       description: "Complete monitoring stack"
       rules:
-        - "custom-agent tcp 8765"
-        - "snmp"
+        - "custom-agent-port saddr custom-monitoring-net"
+        - "snmp saddr custom-monitoring-net"
         - "ping"
         - "ssh"
 
