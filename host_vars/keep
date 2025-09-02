@@ -1,0 +1,6 @@
+# host_vars
+
+This directory is reserved for Ansible host variables.
+
+⚠️ Do not commit real `*.yml` variable files here.  
+Create your own local files such as `myserver.yml` on your system.
