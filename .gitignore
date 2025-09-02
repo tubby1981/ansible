@@ -1,9 +1,12 @@
-# niet committen
-host_vars/*yml
-group_vars/*yml
+# Ignore all Ansible variable and inventory YAML files (recursively)
+host_vars/**/*.yml
+group_vars/**/*.yml
+inventory/**/*.yml
 
-# Ignore all inventory files
-inventory/*.yml
+# Keep placeholder files
+!host_vars/keep
+!group_vars/keep
+!inventory/keep
 
 # Python cache-bestanden
 **/__pycache__/
@@ -12,13 +15,13 @@ inventory/*.yml
 # LibreOffice lock files
 *.~lock.*#
 
-# Ignore Vim/Neovim swap files
+# Vim/Neovim swap files
 *.swp
 
-# Igonore Environment file
+# Environment file
 .env
 
-# Ignore status files
+# Status/log files
 *.txt
 *.log
 *.old
