@@ -1,5 +1,5 @@
-namespace: "ansible-servers"
-name: "linuxsrv"
+namespace: "tubby1981"
+name: "system"
 version: "1.0.0"
 readme: "README.md"
 authors:
@@ -7,12 +7,10 @@ authors:
 license: "MIT"
 tags:
   - linux
+  - firewall
   - servers
   - foomuuri
-  - firewall
 dependencies: {}
-
-# Voeg deze toe voor GitHub integratie:
 repository: "https://github.com/tubby1981/ansible"
 homepage: "https://github.com/tubby1981/ansible"
 issues: "https://github.com/tubby1981/ansible/issues"

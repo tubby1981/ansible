@@ -5,7 +5,7 @@ This repository contains a collection of Ansible roles designed to automate the 
 ## Available Roles
 
 - **Foomuuri**: A role for managing [Foomuuri](https://github.com/FoobarOy/foomuuri), a multi-zone bidirectional nftables firewall.  
-  For detailed documentation, see [FOOMUURI.md](./FOOMUURI.md).
+  For detailed documentation, see [FOOMUURI.md](./docs/FOOMUURI.md).
 
 *Additional roles will be added to this repository over time. Check back for updates or refer to the [Issues](https://github.com/your-repo-link/issues) section for planned roles.*
 

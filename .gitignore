@@ -1,4 +1,4 @@
-# Ignore all Ansible variable and inventory YAML files (recursively)
+# Ansible vars/inventory
 host_vars/**/*.yml
 group_vars/**/*.yml
 inventory/**/*.yml
@@ -8,22 +8,34 @@ inventory/**/*.yml
 !group_vars/keep
 !inventory/keep
 
-# Python cache-bestanden
+# Collection build artefacts
+*.tar.gz
+MANIFEST.json
+
+# Python cache
 **/__pycache__/
 *.py[cod]
+
+# Editors
+*.swp
+*.swo
+*.tmp
 
 # LibreOffice lock files
 *.~lock.*#
 
-# Vim/Neovim swap files
-*.swp
-
-# Environment file
+# Local env/config
 .env
 
-# Status/log files
+# Logs, status files
 *.txt
 *.log
 *.old
-*.back
+*.bak
 *.bck
+
+# OS/IDE clutter
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
