@@ -1,12 +1,12 @@
 ---
 galaxy_info:
   role_name: foomuuri
-  author: Your Name
-  description: Ansible role for managing Foomuuri multizone bidirectional nftables firewall
-  company: Your Organization
+  author: Tromp Wezelman
+  description: "Ansible role for managing Foomuuri multizone bidirectional nftables firewall"
+  company: ""
   license: MIT
-  min_ansible_version: '2.9'
-  
+  min_ansible_version: 2.9
+
   platforms:
     - name: Debian
       versions:
@@ -31,3 +31,4 @@ galaxy_info:
     - foomuuri
 
 dependencies: []
+
