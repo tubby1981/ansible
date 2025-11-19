@@ -1,17 +1,51 @@
-namespace: "tubby1981"
-name: "system"
-version: "1.0.0"
-readme: "README.md"
+---
+namespace: tubby1981
+name: system
+version: 1.0.0
+readme: README.md
 authors:
-  - "Tromp Wezelman"
-license: "MIT"
+  - Tubby1981 <tubby1981@users.noreply.github.com>
+
+description: >-
+  Ansible collection for Linux system management featuring Foomuuri - 
+  a modern multizone bidirectional nftables firewall with advanced NAT, 
+  dynamic IP lists, and comprehensive security features.
+
+license:
+  - MIT
+
+license_file: LICENSE
+
 tags:
-  - linux
   - firewall
-  - servers
+  - nftables
   - foomuuri
+  - security
+  - linux
+  - debian
+  - ubuntu
+  - archlinux
+  - system
+  - networking
+  - nat
+  - infrastructure
+  - hardening
+  - multizone
+  - netfilter
+
 dependencies: {}
-repository: "https://github.com/tubby1981/ansible"
-homepage: "https://github.com/tubby1981/ansible"
-issues: "https://github.com/tubby1981/ansible/issues"
-documentation: "https://github.com/tubby1981/ansible/blob/main/README.md"
+
+repository: https://github.com/tubby1981/ansible
+documentation: https://github.com/tubby1981/ansible/blob/main/README.md
+homepage: https://github.com/tubby1981/ansible
+issues: https://github.com/tubby1981/ansible/issues
+
+build_ignore:
+  - .gitignore
+  - .git
+  - .github
+  - '*.tar.gz'
+  - tests/output
+  - host_vars
+  - group_vars
+  - inventory

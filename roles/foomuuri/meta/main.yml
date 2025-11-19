@@ -1,34 +1,43 @@
 ---
 galaxy_info:
   role_name: foomuuri
-  author: Tromp Wezelman
-  description: "Ansible role for managing Foomuuri multizone bidirectional nftables firewall"
-  company: ""
+  namespace: tubby1981
+  author: Tubby1981
+  description: >-
+    Ansible role for managing Foomuuri, a modern multizone bidirectional 
+    nftables firewall with support for advanced features like NAT, 
+    dynamic IP lists, zone mapping, and traffic shaping.
+  
   license: MIT
-  min_ansible_version: 2.9
-
+  
+  min_ansible_version: "2.10"
+  
   platforms:
     - name: Debian
       versions:
         - bullseye
         - bookworm
-        - trixie
     - name: Ubuntu
       versions:
         - focal
         - jammy
         - noble
-        - mantic
     - name: ArchLinux
       versions:
-        - any
-
+        - all
+  
   galaxy_tags:
     - firewall
     - nftables
+    - foomuuri
     - security
     - networking
-    - foomuuri
+    - system
+    - netfilter
+    - hardening
+    - nat
+    - multizone
+    - infrastructure
+    - linux
 
 dependencies: []
-
