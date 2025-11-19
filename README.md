@@ -20,8 +20,6 @@ Configure and manage [Foomuuri](https://github.com/FoobarOy/foomuuri), a modern 
 - 🔄 Idempotent operations
 - 🚀 Production-ready
 
-[→ Full documentation](docs/FOOMUURI.md)
-
 ## 🚀 Installation
 
 ### Via Ansible Galaxy
@@ -155,7 +153,7 @@ ansible-playbook -i inventory/hosts.yml playbook.yml
 
 ## 📖 Documentation
 
-- [Foomuuri Role Documentation](docs/FOOMUURI.md)
+- [Foomuuri Role Documentation](roles/foomuuri/README.md)
 - [Example Playbooks](playbooks/examples/)
 - [Contributing Guidelines](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)

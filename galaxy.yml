@@ -11,10 +11,7 @@ description: >-
   a modern multizone bidirectional nftables firewall with advanced NAT, 
   dynamic IP lists, and comprehensive security features.
 
-license:
-  - MIT
-
-license_file: LICENSE
+license: MIT
 
 tags:
   - firewall

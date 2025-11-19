@@ -1,49 +1,46 @@
 ---
 - name: Generate Foomuuri configuration
-  template:
+  ansible.builtin.template:
     src: foomuuri.conf.j2
     dest: "{{ foomuuri_config_path | default('/etc/foomuuri') }}/foomuuri.conf"
     owner: root
     group: root
     mode: '0644'
-    backup: yes
-  notify: 
-    - validate foomuuri config
-    - restart foomuuri
+    backup: true
+  notify:
+    - Validate foomuuri config
+    - Restart foomuuri
   register: foomuuri_config_result
+  changed_when: false
 
 - name: Create raw nftables rule files
-  copy:
+  ansible.builtin.copy:
     content: "{{ item.content }}"
     dest: "{{ foomuuri_config_path | default('/etc/foomuuri') }}/{{ item.name }}"
     owner: root
     group: root
     mode: '0644'
-    backup: yes
+    backup: true
   loop: "{{ foomuuri_raw_nft_files + foomuuri_extra_raw_nft_files }}"
   when: foomuuri_raw_nft_files or foomuuri_extra_raw_nft_files
+  changed_when: false
   notify:
-    - validate foomuuri config
-    - restart foomuuri
+    - Validate foomuuri config
+    - Restart foomuuri
 
 - name: Ensure systemd service is enabled
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ foomuuri_service_name | default('foomuuri') }}"
-    enabled: yes
-    daemon_reload: yes
-
-- name: Start Foomuuri service (if config changed)
-  systemd:
-    name: "{{ foomuuri_service_name | default('foomuuri') }}"
-    state: started
-  when: foomuuri_config_result is changed
+    enabled: true
+    daemon_reload: true
+  changed_when: false
 
 - name: Ensure Foomuuri service is running
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ foomuuri_service_name | default('foomuuri') }}"
     state: started
   register: foomuuri_service_status
 
 - name: Display service status
-  debug:
+  ansible.builtin.debug:
     msg: "Foomuuri service is {{ foomuuri_service_status.status.ActiveState }}"

@@ -7,7 +7,7 @@ foomuuri_binary_path: "/usr/sbin/foomuuri"
 # Debian/Ubuntu package names
 foomuuri_debian_dependencies:
   - python3
-  - python3-requests  
+  - python3-requests
   - python3-dbus
   - python3-gi
   - python3-systemd

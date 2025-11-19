@@ -1,31 +1,33 @@
 ---
 # handlers file for foomuuri
 
-- name: validate foomuuri config
-  command: /usr/sbin/foomuuri check
+- name: Validate foomuuri config
+  ansible.builtin.command: /usr/sbin/foomuuri check
   environment:
     PATH: "/usr/sbin:/usr/bin:/sbin:/bin"
-  listen: "validate foomuuri config"  
+  listen: "validate foomuuri config"
+  changed_when: false
 
-- name: restart foomuuri
-  systemd:
+- name: Restart foomuuri
+  ansible.builtin.systemd:
     name: foomuuri
     state: restarted
-    daemon_reload: yes
-  listen: "restart foomuuri"
+    daemon_reload: true
+  listen: "Restart foomuuri"
 
-- name: reload foomuuri
-  command: /usr/sbin/foomuuri reload
+- name: Reload foomuuri
+  ansible.builtin.command: /usr/sbin/foomuuri reload
   listen: "reload foomuuri"
+  changed_when: false
 
-- name: stop foomuuri
-  systemd:
+- name: Stop foomuuri
+  ansible.builtin.systemd:
     name: foomuuri
     state: stopped
-  listen: "stop foomuuri"
+  listen: "Stop foomuuri"
 
-- name: start foomuuri
-  systemd:
+- name: Start foomuuri
+  ansible.builtin.systemd:
     name: foomuuri
     state: started
-  listen: "start foomuuri"
+  listen: "Start foomuuri"
