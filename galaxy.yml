@@ -7,9 +7,10 @@ authors:
   - Tubby1981 <tubby1981@users.noreply.github.com>
 
 description: >-
-  Ansible collection for Linux system management featuring Foomuuri - 
-  a modern multizone bidirectional nftables firewall with advanced NAT, 
-  dynamic IP lists, and comprehensive security features.
+  Ansible collection for Linux system management featuring Foomuuri -
+  a modern multizone bidirectional nftables firewall with advanced NAT,
+  dynamic IP lists, and comprehensive security features. **Now also includes
+  a comprehensive role for managing the Apache2 webserver.**
 
 license: MIT
 
@@ -29,6 +30,10 @@ tags:
   - hardening
   - multizone
   - netfilter
+  - apache
+  - apache2
+  - httpd
+  - webserver
 
 dependencies: {}
 

@@ -1,0 +1,7 @@
+---
+# Apache Webserver Role - Handlers
+
+- name: restart apache
+  service:
+    name: "{{ apache_service_name }}"
+    state: restarted

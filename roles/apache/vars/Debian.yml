@@ -1,0 +1,10 @@
+---
+# Variables that are specific to Debian/Ubuntu families
+
+apache_package_name: "apache2"
+apache_service_name: "apache2"
+apache_config_dir: "/etc/apache2"
+apache_sites_available_dir: "{{ apache_config_dir }}/sites-available"
+apache_sites_enabled_dir: "{{ apache_config_dir }}/sites-enabled"
+apache_modules_path: "{{ apache_config_dir }}/mods-enabled"
+

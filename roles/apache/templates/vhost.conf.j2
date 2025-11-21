@@ -1,0 +1,108 @@
+# {{ ansible_managed }}
+# VirtualHost configuration for {{ item.server_name }}
+
+{% if not item.ssl or not item.with_letsencrypt %}
+# HTTP VirtualHost (port {{ item.port | default(80) }})
+<VirtualHost {{ apache_listen_addresses | join(' ') }}:{{ item.port | default(80) }}>
+    ServerName {{ item.server_name }}
+{% if item.aliases is defined and item.aliases | length > 0 %}
+{% for alias in item.aliases %}
+    ServerAlias {{ alias }}
+{% endfor %}
+{% endif %}
+
+    DocumentRoot {{ item.document_root | default(apache_document_root) }}
+
+    <Directory {{ item.document_root | default(apache_document_root) }}>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    # Error and access logs
+    ErrorLog {{ apache_log_dir | default('/var/log/apache2') }}/{{ item.server_name }}_error.log
+    CustomLog {{ apache_log_dir | default('/var/log/apache2') }}/{{ item.server_name }}_access.log combined
+
+{% if item.redirect_https and item.ssl and not item.with_letsencrypt %}
+    # Manual HTTPS redirect (only when Let's Encrypt is NOT used)
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R=301,L]
+{% endif %}
+
+{% if item.rewrite_rules is defined and item.rewrite_rules | length > 0 and not item.with_letsencrypt %}
+    # Custom rewrite rules (only when Let's Encrypt is NOT used)
+{% for rule in item.rewrite_rules %}
+    {{ rule }}
+{% endfor %}
+{% endif %}
+</VirtualHost>
+{% endif %}
+
+{% if item.ssl and not item.with_letsencrypt %}
+# HTTPS VirtualHost (port {{ item.ssl_port | default(443) }})
+# Note: Certificates must be manually configured!
+<VirtualHost {{ apache_listen_addresses | join(' ') }}:{{ item.ssl_port | default(443) }}>
+    ServerName {{ item.server_name }}
+{% if item.aliases is defined and item.aliases | length > 0 %}
+{% for alias in item.aliases %}
+    ServerAlias {{ alias }}
+{% endfor %}
+{% endif %}
+
+    DocumentRoot {{ item.document_root | default(apache_document_root) }}
+
+    <Directory {{ item.document_root | default(apache_document_root) }}>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    # SSL Configuration
+    SSLEngine on
+    
+    # Certificate paths - CONFIGURE THESE!
+    # SSLCertificateFile /etc/ssl/certs/{{ item.server_name }}.crt
+    # SSLCertificateKeyFile /etc/ssl/private/{{ item.server_name }}.key
+    # SSLCertificateChainFile /etc/ssl/certs/{{ item.server_name }}-chain.crt
+
+    # Modern SSL configuration
+    SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
+    SSLCipherSuite {{ apache_cipher_suite }}
+    SSLHonorCipherOrder off
+    SSLSessionTickets off
+
+    # HSTS (optional, 1 year)
+    Header always set Strict-Transport-Security "max-age=31536000"
+
+    # Error and access logs
+    ErrorLog {{ apache_log_dir | default('/var/log/apache2') }}/{{ item.server_name }}_ssl_error.log
+    CustomLog {{ apache_log_dir | default('/var/log/apache2') }}/{{ item.server_name }}_ssl_access.log combined
+
+{% if item.rewrite_rules is defined and item.rewrite_rules | length > 0 %}
+    # Custom rewrite rules for HTTPS
+{% for rule in item.rewrite_rules %}
+    {{ rule }}
+{% endfor %}
+{% endif %}
+</VirtualHost>
+{% endif %}
+
+{% if item.with_letsencrypt %}
+# ============================================================================
+# Let's Encrypt SSL Configuration
+# ============================================================================
+# 
+# This VirtualHost will be automatically configured by Certbot.
+# 
+# For HTTP-01 challenge:
+#   - HTTP → HTTPS redirect and SSL certificates are managed by Certbot
+#   - Certbot will modify this configuration file automatically
+# 
+# For DNS-01 challenge:
+#   - Certificates are obtained via DNS validation
+#   - A separate SSL configuration file will be created
+# 
+# You do NOT need to add manual rewrite rules for HTTPS redirects!
+# ============================================================================
+{% endif %}

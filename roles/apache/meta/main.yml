@@ -1,0 +1,38 @@
+---
+galaxy_info:
+  author: tubby1981 
+  description: Role for installing, configuring, and managing the Apache2 webserver, including optional Let's Encrypt SSL/TLS using Certbot.
+  license: MIT
+  min_ansible_version: 2.12 
+  
+  collection: tubby1981.system
+  
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+		- noble
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+        - trixie
+
+  galaxy_tags:
+    - web
+    - apache
+    - apache2
+    - httpd
+    - webserver
+    - ssl
+    - tls
+    - letsencrypt
+    - certbot
+    - linux
+    - debian
+    - ubuntu
+    - system
+    - infrastructure		
+
+  dependencies: []

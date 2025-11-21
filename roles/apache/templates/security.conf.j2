@@ -1,0 +1,41 @@
+# {{ ansible_managed }}
+# Apache Security Configuration
+
+# Server identification
+ServerTokens {{ apache_server_tokens }}
+ServerSignature {{ apache_server_signature }}
+
+# Disable HTTP TRACE method
+TraceEnable {{ apache_trace_enable }}
+
+# Security headers (global)
+<IfModule mod_headers.c>
+    # Prevent clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Enable XSS protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Disable directory listing by default
+<Directory />
+    Options -Indexes
+    AllowOverride None
+    Require all denied
+</Directory>
+
+# Hide .git directories
+<DirectoryMatch "\.git">
+    Require all denied
+</DirectoryMatch>
+
+# Hide sensitive files
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

@@ -1,0 +1,10 @@
+---
+# Variables that are specific to RedHat/CentOS/Fedora/AlmaLinux families
+
+apache_package_name: "httpd"
+apache_service_name: "httpd"
+apache_config_dir: "/etc/httpd"
+apache_sites_available_dir: "{{ apache_config_dir }}/sites-available"
+apache_sites_enabled_dir: "{{ apache_config_dir }}/sites-enabled"
+apache_modules_path: "{{ apache_config_dir }}/conf.modules.d"
+
