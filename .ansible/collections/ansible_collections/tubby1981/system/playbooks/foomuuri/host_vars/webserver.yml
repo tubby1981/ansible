@@ -1,0 +1,72 @@
+---
+# host_vars/webserver.yml - Example web server configuration
+
+# Extra zones for web traffic
+foomuuri_extra_zones:
+  - name: "web"
+    interfaces: ["eth1"]
+  - name: "internal"  
+    interfaces: ["eth2"]
+
+# Custom macros for web services - UPDATED SYNTAX
+foomuuri_extra_macros:
+  - name: "web-ports"
+    protocols:
+      tcp: [80, 443]
+  - name: "admin-ips"
+    ips: ["192.168.100.10", "192.168.100.11"]
+  - name: "app-ports"
+    protocols:
+      tcp: [8080, 8443]
+
+# Templates for reusable rule sets
+foomuuri_extra_templates:
+  web_services:
+    description: "Standard web services"
+    rules:
+      - "http"
+      - "https"
+  admin_services:
+    description: "Administrative access"
+    rules:
+      - "ssh saddr admin-ips"
+      - "snmp saddr admin-ips"
+
+# Zone policies defining traffic rules
+foomuuri_extra_zone_policies:
+  # Allow web traffic from public to localhost
+  - from_zone: "web"
+    to_zone: "localhost"
+    rules:
+      - "template web_services"
+      - "app-ports"
+      - "template admin_services"
+      - "drop log"
+  
+  # Allow web traffic from internal to localhost
+  - from_zone: "internal"
+    to_zone: "localhost"
+    rules:
+      - "template web_services"
+      - "ssh"
+      - "ping"
+      - "drop log"
+  
+  # Allow outgoing traffic from localhost
+  - from_zone: "localhost"
+    to_zone: "web"
+    rules:
+      - "accept"
+      
+  - from_zone: "localhost"
+    to_zone: "internal"
+    rules:
+      - "accept"
+
+# Optional: Custom iplists for dynamic IP management
+foomuuri_extra_iplists:
+  "@trusted_clients": 
+    - "trusted.example.com"
+    - "client.example.org"
+  "@cdn_ips":
+    - "https://example.com/cdn-ips.txt"

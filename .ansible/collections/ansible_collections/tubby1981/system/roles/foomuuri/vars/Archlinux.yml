@@ -1,0 +1,16 @@
+---
+# Arch Linux specific variables
+foomuuri_service_name: "foomuuri"
+foomuuri_config_path: "/etc/foomuuri"
+foomuuri_binary_path: "/usr/bin/foomuuri"
+
+# Arch Linux uses different package names
+foomuuri_arch_dependencies:
+  - base-devel  # Required for AUR building
+  - git         # Required for AUR cloning
+  - python
+  - python-requests
+  - python-dbus
+  - python-gobject
+  - python-systemd
+  - nftables

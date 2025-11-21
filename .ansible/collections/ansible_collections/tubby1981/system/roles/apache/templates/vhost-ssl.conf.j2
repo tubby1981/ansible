@@ -1,0 +1,54 @@
+# {{ ansible_managed }}
+# SSL VirtualHost configuration for {{ item.item.server_name }}
+# Generated for DNS-01 Let's Encrypt challenge
+
+<VirtualHost {{ apache_listen_addresses | join(' ') }}:{{ item.item.ssl_port | default(443) }}>
+    ServerName {{ item.item.server_name }}
+{% if item.item.aliases is defined and item.item.aliases | length > 0 %}
+{% for alias in item.item.aliases %}
+    ServerAlias {{ alias }}
+{% endfor %}
+{% endif %}
+
+    DocumentRoot {{ item.item.document_root | default(apache_document_root) }}
+
+    <Directory {{ item.item.document_root | default(apache_document_root) }}>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    # SSL Configuration - Let's Encrypt certificates
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/{{ item.item.server_name }}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{ item.item.server_name }}/privkey.pem
+
+    # Modern SSL configuration
+    SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
+    SSLCipherSuite {{ apache_cipher_suite }}
+    SSLHonorCipherOrder off
+    SSLSessionTickets off
+
+    # HSTS (HTTP Strict Transport Security) - 1 year
+    Header always set Strict-Transport-Security "max-age=31536000"
+
+    # Additional security headers
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Error and access logs
+    ErrorLog {{ apache_log_dir | default('/var/log/apache2') }}/{{ item.server_name }}_ssl_error.log
+    CustomLog {{ apache_log_dir | default('/var/log/apache2') }}/{{ item.server_name }}_ssl_access.log combined
+
+{% if item.item.redirect_https %}
+    # Redirect HTTP to HTTPS (for DNS-01 challenge)
+    # Note: HTTP VirtualHost should have a redirect as well
+{% endif %}
+
+{% if item.item.rewrite_rules is defined and item.item.rewrite_rules | length > 0 %}
+    # Custom rewrite rules
+{% for rule in item.item.rewrite_rules %}
+    {{ rule }}
+{% endfor %}
+{% endif %}
+</VirtualHost>

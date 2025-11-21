@@ -1,0 +1,21 @@
+---
+# tasks file for foomuuri
+- name: Include OS-specific variables
+  ansible.builtin.include_vars: "{{ ansible_distribution }}.yml"
+  when: ansible_distribution in ['Debian', 'Ubuntu', 'Archlinux']
+
+- name: Check if Foomuuri should be installed
+  ansible.builtin.fail:
+    msg: "This role only supports Foomuuri installation. Set firewall variable to 'foomuuri'"
+  when: firewall is undefined or firewall|lower != "foomuuri"
+
+- name: Check OS compatibility
+  ansible.builtin.fail:
+    msg: "This role supports Debian, Ubuntu, and Arch Linux only"
+  when: ansible_distribution not in ['Debian', 'Ubuntu', 'Archlinux']
+
+- name: Install Foomuuri
+  ansible.builtin.include_tasks: install.yml
+
+- name: Configure Foomuuri
+  ansible.builtin.include_tasks: configure.yml

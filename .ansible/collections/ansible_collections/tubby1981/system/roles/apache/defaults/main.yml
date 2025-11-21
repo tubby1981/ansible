@@ -1,0 +1,114 @@
+---
+# Apache Webserver Role – Default Variables (distribution-independent)
+# -------------------------------------------------
+# General settings
+apache_enabled: true                                 # Enable/disable the role
+apache_document_root: "/var/www/html"
+apache_server_name: ""                               # Default: uses ansible_fqdn
+
+# -------------------------------------------------
+# VHost & Cleanup settings
+# -------------------------------------------------
+# Disable/remove the default VHost (000-default.conf) provided by the OS package.
+# Recommended to prevent conflicts and expose only managed sites.
+apache_disable_default_vhost: true
+
+# -------------------------------------------------
+# Apache runtime settings
+apache_runtime_dir: "/var/run/apache2"
+apache_lock_dir: "/var/lock/apache2"
+apache_pid_file: "/var/run/apache2/apache2.pid"
+apache_log_dir: "/var/log/apache2"
+apache_run_user: "www-data"
+apache_run_group: "www-data"
+
+# -------------------------------------------------
+# Performance tuning
+apache_timeout: 60
+apache_keepalive: "On"
+apache_max_keepalive_requests: 100
+apache_keepalive_timeout: 5
+apache_log_level: "warn"
+
+# -------------------------------------------------
+# Optional features
+apache_enable_freeipa_auth: false
+
+# -------------------------------------------------
+# Listening ports & addresses
+#   * apache_listen_ports      – plain HTTP ports (e.g. 80, 8080)
+#   * apache_ssl_ports         – TLS/SSL ports (e.g. 443, 8443)
+#   * apache_listen_addresses  – IP addresses to bind; '*' means all interfaces
+apache_listen_ports: [80]                           # Can be overridden in host/group vars
+apache_ssl_ports: []                                # Empty → no SSL listener (enabled by vhosts)
+apache_listen_addresses: ['*']
+
+# -------------------------------------------------
+# Apache modules to enable (common to all families)
+apache_modules_enabled:
+  - rewrite
+  - ssl
+  - headers
+
+# -------------------------------------------------
+# Virtual hosts (override in host_vars or group_vars)
+#   - server_name      : DNS name or IP
+#   - document_root    : path to website files
+#   - port             : HTTP port (must be listed in apache_listen_ports)
+#   - ssl              : true/false – create an HTTPS vhost
+#   - redirect_https   : true/false – enable HTTP → HTTPS redirect (only without Let's Encrypt)
+#   - aliases          : list of additional ServerAlias values
+#   - rewrite_rules    : list of raw Apache rewrite directives (only without Let's Encrypt)
+#   - enabled          : true/false
+#   - with_letsencrypt : true/false – request a Let's Encrypt certificate
+apache_vhosts: []   # Example structures are documented in the README
+
+# -------------------------------------------------
+# Global SSL / security settings
+apache_server_tokens: "Prod"          # On | Off | Prod | Minimal | Full | etc.
+apache_server_signature: "Off"        # On | Off | EMail
+apache_trace_enable: "Off"            # On | Off | extended
+apache_cipher_suite: >                # OpenSSL cipher string (RFC 7540 / 8446)
+  "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305"
+
+# -------------------------------------------------
+# Let's Encrypt / Certbot configuration
+apache_certbot_enabled: false
+apache_certbot_email: ""                            # Required when Certbot is enabled
+apache_certbot_auto_renew: true
+apache_certbot_renew_command: "certbot renew --quiet --no-self-upgrade"
+apache_certbot_strict_dns_check: true               # Fail playbook if DNS records are missing (HTTP-01 only)
+
+# -------------------------------------------------
+# Challenge method: "http" or "dns"
+#   * http - HTTP-01 challenge (default, easiest setup)
+#            Requires port 80 open and domains pointing to server
+#   * dns  - DNS-01 challenge (for wildcard certs or when port 80 is blocked)
+#            Requires DNS provider API credentials
+apache_certbot_challenge_method: "http"
+
+# -------------------------------------------------
+# HTTP-01 Challenge settings
+apache_certbot_package: "certbot"
+apache_certbot_apache_plugin: "python3-certbot-apache"
+apache_certbot_packages:
+  - "{{ apache_certbot_package }}"
+  - "{{ apache_certbot_apache_plugin }}"
+
+# -------------------------------------------------
+# DNS-01 Challenge settings (only used when challenge_method is "dns")
+#   Supported providers: cloudflare, route53, digitalocean, google, ovh, etc.
+#   See: https://eff-certbot.readthedocs.io/en/stable/using.html#dns-plugins
+apache_certbot_dns_provider: ""                     # e.g. "cloudflare", "route53", "digitalocean"
+apache_certbot_dns_credentials_file: ""             # Path to credentials file (e.g. /root/.secrets/certbot/cloudflare.ini)
+apache_certbot_dns_credentials_content: ""          # Credentials file content (will be written securely)
+apache_certbot_dns_propagation_seconds: 60          # Wait time for DNS propagation
+
+# DNS plugin packages (will be installed based on provider)
+# Override this if using a different provider
+apache_certbot_dns_packages:
+  cloudflare: "python3-certbot-dns-cloudflare"
+  route53: "python3-certbot-dns-route53"
+  digitalocean: "python3-certbot-dns-digitalocean"
+  google: "python3-certbot-dns-google"
+  ovh: "python3-certbot-dns-ovh"

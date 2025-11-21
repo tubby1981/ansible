@@ -1,0 +1,17 @@
+# -------------------------------------------------
+# Managed by Ansible
+# -------------------------------------------------
+
+# Listen directives – plain HTTP
+{% for port in apache_listen_ports %}
+Listen {{ port }}
+{% endfor %}
+
+# Listen directives – HTTPS (only when the ssl module is loaded)
+{% if apache_ssl_ports | length > 0 %}
+<IfModule ssl_module>
+{%  for port in apache_ssl_ports %}
+Listen {{ port }}
+{%  endfor %}
+</IfModule>
+{% endif %}

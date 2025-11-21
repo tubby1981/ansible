@@ -1,0 +1,172 @@
+---
+- name: Determine installation method
+  ansible.builtin.set_fact:
+    foomuuri_install_method_resolved: >-
+      {{
+        'aur' if (foomuuri_install_method == 'auto' and ansible_distribution == 'Archlinux') else
+        'package' if (foomuuri_install_method == 'auto' and (
+            (ansible_distribution == 'Debian' and (ansible_distribution_major_version | int) >= 12) or
+            (ansible_distribution == 'Ubuntu' and (ansible_distribution_version is version('24.10', '>=')))
+        )) else
+        'github' if foomuuri_install_method == 'auto' else
+        foomuuri_install_method
+      }}
+
+- name: Debug foomuuri_install_method_resolved
+  ansible.builtin.debug:
+    var: foomuuri_install_method_resolved
+
+- name: Set OS-specific package list
+  ansible.builtin.set_fact:
+    foomuuri_packages_list: "{{ foomuuri_required_packages[ansible_os_family] | default(foomuuri_required_packages['Debian']) }}"
+
+- name: Install required dependencies (Debian/Ubuntu)
+  ansible.builtin.package:
+    name: "{{ foomuuri_packages_list }}"
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Install required dependencies (Arch Linux)
+  community.general.pacman:
+    name: "{{ foomuuri_packages_list }}"
+    state: present
+  when: ansible_distribution == 'Archlinux' and foomuuri_install_method_resolved != 'aur'
+
+- name: Package installation tasks (Debian/Ubuntu)
+  when: foomuuri_install_method_resolved == "package"
+  block:
+    - name: Add Debian Backports repository
+      ansible.builtin.apt_repository:
+        repo: "deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main"
+        state: present
+      when: ansible_distribution == 'Debian'
+
+    - name: Install Foomuuri from package manager
+      ansible.builtin.package:
+        name: "{{ foomuuri_package }}"
+        state: present
+
+- name: AUR installation tasks (Arch Linux)
+  when: foomuuri_install_method_resolved == "aur"
+  block:
+    - name: Check if AUR helper is available
+      ansible.builtin.command: which {{ foomuuri_aur_helper }}
+      register: foomuuri_aur_helper_check
+      failed_when: false
+      changed_when: false
+
+    - name: Install via AUR helper (yay/paru/trizen)
+      ansible.builtin.command: >
+        {{ foomuuri_aur_helper }}
+        -S --noconfirm foomuuri
+      changed_when: false
+      when:
+        - foomuuri_aur_helper_check.rc == 0
+        - foomuuri_aur_helper in ['yay', 'paru', 'trizen']
+      become: true
+      become_user: "{{ ansible_user_id }}"
+
+    - name: Manual AUR installation with makepkg
+      when: foomuuri_aur_helper_check.rc != 0 or foomuuri_aur_helper == 'makepkg'
+      block:
+        - name: Create build directory
+          ansible.builtin.tempfile:
+            state: directory
+            suffix: aur_build
+          register: foomuuri_aur_build_dir
+
+        - name: Clone Foomuuri AUR repository
+          ansible.builtin.git:
+            repo: https://aur.archlinux.org/foomuuri.git
+            dest: "{{ foomuuri_aur_build_dir.path }}/foomuuri"
+            version: master
+
+        - name: Build package with makepkg
+          ansible.builtin.shell: |
+            cd "{{ foomuuri_aur_build_dir.path }}/foomuuri"
+            makepkg --noconfirm
+          changed_when: false
+          become: true
+          become_user: "{{ ansible_user_id }}"
+
+        - name: Find built package
+          ansible.builtin.find:
+            paths: "{{ foomuuri_aur_build_dir.path }}/foomuuri"
+            patterns: "foomuuri-*.pkg.tar.zst"
+          register: foomuuri_built_package
+
+        - name: Install built package
+          community.general.pacman:
+            name: "{{ foomuuri_built_package.files[0].path }}"
+            state: present
+
+        - name: Clean up build directory
+          ansible.builtin.file:
+            path: "{{ foomuuri_aur_build_dir.path }}"
+            state: absent
+
+- name: GitHub installation tasks
+  when: foomuuri_install_method_resolved == "github"
+  block:
+    - name: Create temporary directory for Foomuuri installation
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: foomuuri
+      register: foomuuri_temp_dir
+
+    - name: Get latest Foomuuri release information
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/FoobarOy/foomuuri/releases/latest
+        return_content: true
+      register: foomuuri_release_info
+      delegate_to: localhost
+      run_once: true
+
+    - name: Download Foomuuri source
+      ansible.builtin.get_url:
+        url: "{{ foomuuri_release_info.json.tarball_url }}"
+        dest: "{{ foomuuri_temp_dir.path }}/foomuuri.tar.gz"
+        mode: '0644'
+
+    - name: Extract Foomuuri source
+      ansible.builtin.unarchive:
+        src: "{{ foomuuri_temp_dir.path }}/foomuuri.tar.gz"
+        dest: "{{ foomuuri_temp_dir.path }}"
+        remote_src: true
+        creates: "{{ foomuuri_temp_dir.path }}/FoobarOy-foomuuri-*"
+
+    - name: Find extracted directory
+      ansible.builtin.find:
+        paths: "{{ foomuuri_temp_dir.path }}"
+        file_type: directory
+        patterns: "FoobarOy-foomuuri-*"
+      register: foomuuri_extract_dir
+
+    - name: Build and install Foomuuri from source
+      ansible.builtin.shell: |
+        cd "{{ foomuuri_extract_dir.files[0].path }}"
+        make
+        make install
+      args:
+        creates: /usr/sbin/foomuuri
+
+    - name: Clean up temporary directory
+      ansible.builtin.file:
+        path: "{{ foomuuri_temp_dir.path }}"
+        state: absent
+
+- name: Ensure Foomuuri service directory exists
+  ansible.builtin.file:
+    path: /etc/foomuuri
+    state: directory
+    mode: '0755'
+
+- name: Check Foomuuri installation
+  ansible.builtin.command: /usr/sbin/foomuuri --version
+  register: foomuuri_version_check
+  changed_when: false
+  failed_when: foomuuri_version_check.rc != 0
+
+- name: Display Foomuuri version
+  ansible.builtin.debug:
+    msg: "Foomuuri version: {{ foomuuri_version_check.stdout }}"

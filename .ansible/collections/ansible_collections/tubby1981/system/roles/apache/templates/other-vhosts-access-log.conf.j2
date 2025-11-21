@@ -1,0 +1,3 @@
+# {{ ansible_managed }}
+# Log for virtual hosts that don't have their own logfile.
+CustomLog {{ apache_log_dir | default('/var/log/apache2') }}/other_vhosts_access.log vhost_combined

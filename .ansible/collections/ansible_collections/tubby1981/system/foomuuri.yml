@@ -1,0 +1,8 @@
+---
+ - name: Configure Foomuuri
+   hosts: all
+   gather_facts: true
+   become: yes
+
+   roles:
+    - foomuuri

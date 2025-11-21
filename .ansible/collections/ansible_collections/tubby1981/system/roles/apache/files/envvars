@@ -1,0 +1,32 @@
+# envvars - default Apache environment variables
+# Managed by Ansible - Do not edit manually
+
+# Since there is no sane way to get the parsed apache2 config in scripts, some
+# settings are defined via environment variables and then used in apache2ctl,
+# /etc/init.d/apache2, /etc/logrotate.d/apache2, etc.
+
+export APACHE_RUN_USER=www-data
+export APACHE_RUN_GROUP=www-data
+
+# Temporary: the directory where apache2 will write its PID file.
+# This is a temporary directory, and it will be removed on package upgrade or removal.
+export APACHE_PID_FILE=/var/run/apache2/apache2$SUFFIX.pid
+export APACHE_RUN_DIR=/var/run/apache2$SUFFIX
+
+# The default lock directory for apache2.
+export APACHE_LOCK_DIR=/var/lock/apache2$SUFFIX
+
+# The default log directory for apache2.
+export APACHE_LOG_DIR=/var/log/apache2$SUFFIX
+
+# Set ulimit for apache2 processes
+ulimit -n 65536
+
+# The locale used by some modules like mod_dav
+export LANG=C
+
+# Prioritize IPv4 over IPv6
+export APACHE_ULIMIT_MAX_FILES='ulimit -n 65536'
+
+# The command to get the status for 'apache2ctl status'.
+export APACHE_LYNX='www-browser -dump'
