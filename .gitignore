@@ -40,3 +40,4 @@ Thumbs.db
 .vscode/
 .idea/
 .zed/
+.zed/*
