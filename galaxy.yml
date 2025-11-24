@@ -1,7 +1,7 @@
 ---
 namespace: tubby1981
 name: system
-version: 1.0.1
+version: 1.0.2
 readme: README.md
 authors:
   - Tubby1981 <tubby1981@users.noreply.github.com>
@@ -40,3 +40,18 @@ tags:
   - database
 
 dependencies: {}
+
+repository: https://github.com/tubby1981/ansible
+documentation: https://github.com/tubby1981/ansible/blob/main/README.md
+homepage: https://github.com/tubby1981/ansible
+issues: https://github.com/tubby1981/ansible/issues
+
+build_ignore:
+  - .gitignore
+  - .git
+  - .github
+  - '*.tar.gz'
+  - tests/output
+  - host_vars
+  - group_vars
+  - inventory
