@@ -11,7 +11,7 @@ description: >-
   a modern multizone bidirectional nftables firewall with advanced NAT,
   dynamic IP lists, and comprehensive security features. **Now also includes
   comprehensive roles for managing the Apache2 webserver and the MariaDB
-  database server.** # <-- NIEUWE TEKST TOEGEVOEGD
+  database server.
 
 license: MIT
 
