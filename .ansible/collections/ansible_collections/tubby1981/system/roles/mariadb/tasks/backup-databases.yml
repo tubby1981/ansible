@@ -1,0 +1,77 @@
+---
+# tasks/backup-databases.yml - Configure automated MySQL/MariaDB backups
+
+- name: Create backup directory structure
+  ansible.builtin.file:
+    path: "{{ mariadb_backup_dir }}"
+    state: directory
+    recurse: true
+    mode: '0750'
+    owner: root
+    group: root
+
+- name: Create backup script directory
+  ansible.builtin.file:
+    path: /usr/local/bin
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Deploy database backup script
+  ansible.builtin.template:
+    src: backup_database.sh.j2
+    dest: /usr/local/bin/mysql-backup.sh
+    owner: root
+    group: root
+    mode: '0750'
+
+- name: Ensure cron.d directory exists
+  ansible.builtin.file:
+    path: /etc/cron.d
+    state: directory
+    mode: '0755'
+
+- name: Configure PATH variable in cron file
+  community.general.cronvar:
+    name: PATH
+    value: "/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
+    user: root
+    cron_file: mysql-backup
+
+- name: Configure SHELL variable in cron file
+  community.general.cronvar:
+    name: SHELL
+    value: "/bin/bash"
+    user: root
+    cron_file: mysql-backup
+
+- name: Schedule automated database backup
+  ansible.builtin.cron:
+    name: "MySQL/MariaDB automated backup"
+    job: "/usr/local/bin/mysql-backup.sh >> /var/log/mysql-backup.log 2>&1"
+    user: root
+    cron_file: mysql-backup
+    hour: "{{ mariadb_backup_hour }}"
+    minute: "{{ mariadb_backup_minute }}"
+    state: "{{ 'present' if mariadb_backup_enabled else 'absent' }}"
+
+- name: Schedule backup cleanup (remove old backups)
+  ansible.builtin.cron:
+    name: "MySQL/MariaDB backup cleanup"
+    job: "find {{ mariadb_backup_dir }} -name '*.gz' -mtime +{{ mariadb_backup_retention_days }} -delete"
+    user: root
+    cron_file: mysql-backup
+    hour: "{{ mariadb_backup_hour | int + 1 }}"
+    minute: "0"
+    state: "{{ 'present' if mariadb_backup_enabled else 'absent' }}"
+
+- name: Create backup log file
+  ansible.builtin.file:
+    path: /var/log/mysql-backup.log
+    state: touch
+    mode: '0640'
+    owner: root
+    group: root
+    modification_time: preserve
+    access_time: preserve

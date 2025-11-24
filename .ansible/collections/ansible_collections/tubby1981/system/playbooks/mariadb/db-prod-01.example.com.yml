@@ -1,0 +1,82 @@
+---
+# host_vars/db-prod-01.example.com.yml
+# Production Database Server Configuration
+
+# MySQL Root Credentials (use Ansible Vault in production!)
+mysql_root_password: "{{ vault_mysql_root_password }}"
+
+# Network Configuration
+mysql_bind_address: '0.0.0.0'  # Allow remote connections
+mysql_port: "3306"
+
+# Server Identification for Replication
+mysql_server_id: "1"
+mysql_replication_role: 'master'
+
+# Performance Tuning (16GB RAM server)
+mysql_innodb_buffer_pool_size: "10G"
+mysql_innodb_log_file_size: "2G"
+mysql_max_connections: "500"
+mysql_thread_cache_size: "32"
+mysql_table_open_cache: "8192"
+mysql_tmp_table_size: "512M"
+mysql_max_heap_table_size: "512M"
+
+# Logging Configuration
+mysql_slow_query_log_enabled: true
+mysql_slow_query_time: "1"
+
+# Backup Configuration
+mysql_backup_enabled: true
+mysql_backup_hour: "2"
+mysql_backup_minute: "30"
+mysql_backup_retention_days: 14
+mysql_backup_dir: /backup/mysql
+
+# Database Configuration
+mysql_databases:
+  - name: testdatabase
+    collation: utf8mb4_general_ci
+    encoding: utf8mb4
+    replicate: 1
+    state: present
+  
+  - name: application_db
+    collation: utf8mb4_unicode_ci
+    encoding: utf8mb4
+    replicate: 1
+    state: present
+
+# User Configuration
+mysql_users:
+  - name: app_user
+    host: '192.168.1.0/255.255.255.0'
+    password: "{{ vault_app_db_password }}"
+    priv: 'application_db.*:ALL'
+    state: present
+  
+  # Backup User
+  - name: backup
+    host: '192.168.1.100'
+    password: "{{ vault_backup_password }}"
+    priv: '*.*:SELECT,LOCK TABLES,RELOAD'
+    state: present
+  
+  # Read-only User for Reports
+  - name: readonly
+    host: '192.168.1.0/255.255.255.0'
+    password: "{{ vault_readonly_password }}"
+    priv: '*.*:SELECT'
+    state: present
+
+# Replication User (for slave servers)
+mysql_replication_user:
+  name: repl_user
+  host: '%'
+  password: "{{ vault_replication_password }}"
+  priv: '*.*:REPLICATION SLAVE,REPLICATION CLIENT'
+
+# Binary Log Configuration
+mysql_max_binlog_size: "500M"
+mysql_binlog_format: "ROW"
+mysql_expire_logs_days: "7"

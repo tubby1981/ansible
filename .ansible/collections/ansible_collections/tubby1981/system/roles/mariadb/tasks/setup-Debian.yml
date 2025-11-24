@@ -1,0 +1,30 @@
+---
+- name: Check if MySQL is already installed.
+  ansible.builtin.stat:
+    path: "/etc/init.d/{{ mariadb_daemon }}"
+  register: mariadb_installed
+
+- name: Update apt cache if MySQL is not yet installed.
+  ansible.builtin.apt:
+    update_cache: true
+  changed_when: false
+  when: not mariadb_installed.stat.exists
+
+- name: Ensure MySQL Python libraries are installed.
+  ansible.builtin.apt:
+    name: "{{ mariadb_python_package_debian }}"
+    state: present
+
+- name: Ensure MySQL packages are installed.
+  ansible.builtin.apt:
+    name: "{{ mariadb_packages }}"
+    state: present
+  register: mariadb_deb_install_packages
+
+# Because Ubuntu starts MySQL as part of the install process, we need to stop
+# mysql and remove the logfiles in case the user set a custom log file size.
+- name: Ensure MySQL is stopped after initial install.
+  ansible.builtin.service:
+    name: "{{ mariadb_daemon }}"
+    state: stopped
+  when: not mariadb_installed.stat.exists

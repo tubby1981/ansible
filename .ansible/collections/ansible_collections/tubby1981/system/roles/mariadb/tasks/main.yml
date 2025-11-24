@@ -1,0 +1,75 @@
+---
+# tasks/main.yml - Main task file for MariaDB/MySQL role
+
+# ==============================================================================
+# Variable Configuration
+# ==============================================================================
+
+- name: Include OS-specific variables
+  ansible.builtin.include_tasks: variables.yml
+  tags: ['mysql', 'mariadb_config']
+
+# ==============================================================================
+# Installation Tasks
+# ==============================================================================
+
+- name: Include RedHat family setup tasks
+  ansible.builtin.include_tasks: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+  tags: ['mysql', 'mariadb_install']
+
+- name: Include Debian family setup tasks
+  ansible.builtin.include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+  tags: ['mysql', 'mariadb_install']
+
+- name: Determine if MySQL packages were installed
+  ansible.builtin.set_fact:
+    mariadb_install_packages: >-
+      {{ (mariadb_rh_install_packages is defined and mariadb_rh_install_packages.changed)
+         or (mariadb_deb_install_packages is defined and mariadb_deb_install_packages.changed) }}
+  tags: ['mysql', 'mariadb_install']
+
+# ==============================================================================
+# Configuration Tasks
+# ==============================================================================
+
+- name: Configure MySQL/MariaDB
+  ansible.builtin.include_tasks: configure.yml
+  tags: ['mysql', 'mariadb_config']
+
+- name: Secure MySQL installation
+  ansible.builtin.include_tasks: secure-installation.yml
+  tags: ['mysql', 'mariadb_secure']
+
+# ==============================================================================
+# Database and User Management
+# ==============================================================================
+
+- name: Manage MySQL databases
+  ansible.builtin.include_tasks: databases.yml
+  when: mariadb_databases | length > 0
+  tags: ['mysql', 'mariadb_databases']
+
+- name: Manage MySQL users
+  ansible.builtin.include_tasks: users.yml
+  when: mariadb_users | length > 0
+  tags: ['mysql', 'mariadb_users']
+
+# ==============================================================================
+# Replication Configuration
+# ==============================================================================
+
+- name: Configure MySQL replication
+  ansible.builtin.include_tasks: replication.yml
+  when: mariadb_replication_role != ''
+  tags: ['mysql', 'mariadb_replication']
+
+# ==============================================================================
+# Backup Configuration
+# ==============================================================================
+
+- name: Configure database backups
+  ansible.builtin.include_tasks: backup-databases.yml
+  when: mariadb_backup_enabled | default(true)
+  tags: ['mysql', 'mariadb_backup']

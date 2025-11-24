@@ -1,0 +1,101 @@
+---
+- name: Get MySQL version.
+  ansible.builtin.command: 'mysql --version'
+  register: mariadb_cli_version
+  changed_when: false
+  check_mode: false
+
+- name: Copy my.cnf global MySQL configuration.
+  ansible.builtin.template:
+    src: my.cnf.j2
+    dest: "{{ mariadb_config_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+    force: "{{ mariadb_overwrite_global_mycnf }}"
+  notify: Restart mariadb service
+
+- name: Verify mysql include directory exists.
+  ansible.builtin.file:
+    path: "{{ mariadb_config_include_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: mariadb_config_include_files | length
+
+- name: Copy my.cnf override files into include directory.
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ mariadb_config_include_dir }}/{{ item.src | basename }}"
+    owner: root
+    group: root
+    mode: '0644'
+    force: "{{ item.force | default(False) }}"
+  with_items: "{{ mariadb_config_include_files }}"
+  notify: Restart mariadb service
+
+- name: Ensure MariaDB log directory exists
+  ansible.builtin.file:
+    path: /var/log/mysql
+    state: directory
+    mode: '0755'
+    owner: mysql
+    group: mysql
+  when: mariadb_slow_query_log_enabled
+
+- name: Create slow query log file (if configured).
+  ansible.builtin.file:
+    path: "{{ mariadb_slow_query_log_file }}"
+    state: touch
+    mode: '0640'
+    owner: mysql
+    group: mysql
+  when: mariadb_slow_query_log_enabled
+
+- name: Create datadir if it does not exist
+  ansible.builtin.file:
+    path: "{{ mariadb_datadir }}"
+    state: directory
+    owner: mysql
+    group: mysql
+    mode: '0755'
+    setype: mysqld_db_t
+
+- name: Set ownership on slow query log file (if configured).
+  ansible.builtin.file:
+    path: "{{ mariadb_slow_query_log_file }}"
+    state: file
+    owner: mysql
+    group: "{{ mariadb_log_file_group }}"
+    mode: '0640'
+  when: mariadb_slow_query_log_enabled
+
+- name: Ensure error log file exists (if configured).
+  ansible.builtin.file:
+    path: "{{ mariadb_log_error }}"
+    state: touch # Maakt het bestand aan als het niet bestaat
+    owner: mysql
+    group: mysql # Stel hier de juiste gebruiker en groep in
+    mode: '0640' # Stel hier de juiste permissies in
+  when:
+    - mariadb_log | default(true)
+    - mariadb_log_error | default(false)
+
+- name: Set ownership on error log file (if configured).
+  ansible.builtin.file:
+    path: "{{ mariadb_log_error }}"
+    state: file
+    owner: mysql
+    group: "{{ mariadb_log_file_group }}"
+    mode: '0640'
+  when:
+    - mariadb_log | default(true)
+    - mariadb_log_error | default(false)
+
+- name: Ensure MySQL is started and enabled on boot.
+  ansible.builtin.service:
+    name: "{{ mariadb_daemon }}"
+    state: started
+    enabled: "{{ mariadb_enabled_on_startup }}"
+  register: mariadb_service_configuration

@@ -1,0 +1,7 @@
+---
+- name: Ensure MySQL packages are installed.
+  ansible.builtin.dnf:
+    name: "{{ mariadb_packages }}"
+    state: present
+    enablerepo: "{{ mariadb_enablerepo | default(omit, true) }}"
+  register: mariadb_rh_install_packages

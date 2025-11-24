@@ -1,0 +1,11 @@
+---
+- name: Configure Production MySQL Master Server
+  hosts: all
+  become: yes
+  
+  vars_files:
+    - vault/databases.yml  # Contains encrypted passwords
+  
+  roles:
+    - role: mariadb
+      tags: ['mysql', 'database']

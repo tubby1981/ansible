@@ -1,0 +1,68 @@
+---
+# tasks/variables.yml - Load and define OS-specific variables
+
+- name: Include OS-specific variables
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family }}.yml"
+      skip: true
+
+- name: Define mariadb_packages
+  ansible.builtin.set_fact:
+    mariadb_packages: "{{ __mariadb_packages | list }}"
+  when: mariadb_packages is not defined or mariadb_packages | length == 0
+
+- name: Define mariadb_daemon
+  ansible.builtin.set_fact:
+    mariadb_daemon: "{{ __mariadb_daemon }}"
+  when: mariadb_daemon is not defined
+
+- name: Define mariadb_slow_query_log_file
+  ansible.builtin.set_fact:
+    mariadb_slow_query_log_file: "{{ __mariadb_slow_query_log_file }}"
+  when: mariadb_slow_query_log_file is not defined
+
+- name: Define mariadb_log_error
+  ansible.builtin.set_fact:
+    mariadb_log_error: "{{ __mariadb_log_error }}"
+  when: mariadb_log_error is not defined
+
+- name: Define mariadb_syslog_tag
+  ansible.builtin.set_fact:
+    mariadb_syslog_tag: "{{ __mariadb_syslog_tag }}"
+  when: mariadb_syslog_tag is not defined
+
+- name: Define mariadb_pid_file
+  ansible.builtin.set_fact:
+    mariadb_pid_file: "{{ __mariadb_pid_file }}"
+  when: mariadb_pid_file is not defined
+
+- name: Define mariadb_config_file
+  ansible.builtin.set_fact:
+    mariadb_config_file: "{{ __mariadb_config_file }}"
+  when: mariadb_config_file is not defined
+
+- name: Define mariadb_config_include_dir
+  ansible.builtin.set_fact:
+    mariadb_config_include_dir: "{{ __mariadb_config_include_dir }}"
+  when: mariadb_config_include_dir is not defined
+
+- name: Define mariadb_socket
+  ansible.builtin.set_fact:
+    mariadb_socket: "{{ __mariadb_socket }}"
+  when: mariadb_socket is not defined
+
+- name: Define mariadb_supports_innodb_large_prefix
+  ansible.builtin.set_fact:
+    mariadb_supports_innodb_large_prefix: "{{ __mariadb_supports_innodb_large_prefix }}"
+  when: mariadb_supports_innodb_large_prefix is not defined
+
+- name: Display detected MySQL configuration
+  ansible.builtin.debug:
+    msg:
+      - "MySQL Daemon: {{ mariadb_daemon }}"
+      - "MySQL Packages: {{ mariadb_packages }}"
+      - "Config File: {{ mariadb_config_file }}"
+      - "Socket: {{ mariadb_socket }}"
+  when: ansible_verbosity >= 1

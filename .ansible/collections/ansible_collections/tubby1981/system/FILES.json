@@ -8,6 +8,76 @@
    "format": 1
   },
   {
+   "name": "group_vars",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "group_vars/keep",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "6417f7f3b42fbf5ff83c750ac756060999d9314a0fa3f1c3b92af1138c90b8a1",
+   "format": 1
+  },
+  {
+   "name": "host_vars",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "host_vars/mail.handigerecepten.nl",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "host_vars/mail.handigerecepten.nl/foomuuri.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e22edae1d0b663987c9d648d63582434890638a1b3ec07dd0e39093a4e6fabf1",
+   "format": 1
+  },
+  {
+   "name": "host_vars/keep",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "445a19ed3e6d753069bf378ba147df39f2108c2c9b895228d050f448a8395944",
+   "format": 1
+  },
+  {
+   "name": "host_vars/mail2.handigerecepten.nl",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "host_vars/mail2.handigerecepten.nl/foomuuri.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e22edae1d0b663987c9d648d63582434890638a1b3ec07dd0e39093a4e6fabf1",
+   "format": 1
+  },
+  {
+   "name": "host_vars/mail2.handigerecepten.nl/apache.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "9290955c861978a7bc4ccd8092179782c66f4a0735c6f03317b073ad56421db9",
+   "format": 1
+  },
+  {
+   "name": "host_vars/mail2.handigerecepten.nl/mariadb.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "f4c259c8c21058fc5e0531c72c8b9af73cc3f3f742a068df25cc9c696536b315",
+   "format": 1
+  },
+  {
    "name": "roles",
    "ftype": "dir",
    "chksum_type": null,
@@ -145,13 +215,6 @@
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "032203d8b7881868d8218f928a7b632198a2b5775de7633c5cc67c838f932db9",
-   "format": 1
-  },
-  {
-   "name": "roles/foomuuri/.README.md.swp",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "71ad74832f379d4e27327fb0fe967ea007ea5dd28dd5adf923ab311b1ea5dba0",
    "format": 1
   },
   {
@@ -337,6 +400,223 @@
    "format": 1
   },
   {
+   "name": "roles/mariadb",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/handlers",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/handlers/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "eaf03494efafb3c4c6fe891a1c47a230153ea33d868193da59887c67d5ca70ca",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/databases.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "281a12f5d6fbc0aa903a12f6adc88fd52ea34686be1f4844ae748dbf667719fe",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/users.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "07815402676a64fc4ea60a0bec52689a2e6205a3a61ecb798b8422b9d5e5ec91",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/variables.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "32875197bfbee07731b89582d858ac034cc3102d834d1f745cc924463abfb1c0",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/configure.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "6c445f78a4db6dc68b5c3d17100caea6cc7cc834b4b730a0cc48c77b73bb242b",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/setup-Debian.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "ed43aba9fe29d1a5679a3898f806c79df386a381465e4fda5320ddbcc5f49061",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e2ac1267e83fc01f7a35e4c35631373e7e5ae9068297b982c41c0e70e8811864",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/setup-RedHat.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "6f79fb1f67023177a8097a18080d930fedee8f4f4a199e0c046d815a3338d03e",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/replication.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2bfe45ca4d2ba89ceac4f812f36f1548b397fc092066dc1b1ce5994cd988de23",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/secure-installation.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e6999d0f24aab324044a5a746b125330b9cd467bda39920e5cb1ef0bfd1526c2",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/backup-databases.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "9e7c5e7b5dfd8e1da6f8c78515d171c97f5241cc83cf809caa766733fbe95378",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/templates",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/templates/backup_database.sh.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2a760450c0ec5e39babd1f00c22382c561433bc684beb05e0f5b7e0ecda723d9",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/templates/my.cnf.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "0e6086cf616a4cf6c2f552bd80b58d0c0cbc576f5a5d5c3b50346c8892ff3d88",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/templates/root-my.cnf.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e67717c8272282547f0c6b7ebb201c6231648323ec61471454a8dcb63a584560",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/templates/user-my.cnf.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "8fd0308e75c96ce32743c29b1249ce2b2d77a52da4dea01e99fffdb54cd75ace",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/vars",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/vars/Debian.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "848853b90e958e8bbeffae5b3706d6df03fccca298815799714a759710196932",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/vars/RedHat.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "cb7e740396d803dec2ef403510a59e25f5efe0ee4bc32783a2aff88d85e3d136",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/defaults",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/defaults/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e1cdc9df995939b7875f1f6e4bb3621a81ce6090e6b2211a727ae28e1243eebb",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/QUICKSTART.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "b2c5ba5a93521292a0578cb3f04c1acec2b3a416e6c41fef040fdb5626ac3edb",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/README.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "a617b59c736f6508245524886f520490f0cdc0f9c698b7c3fb29c2df8ffaa774",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/meta/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "bd9751686cd9ffaae6e75b365504831722556a98055bf8561730ea3f49ad746c",
+   "format": 1
+  },
+  {
+   "name": "inventory",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "inventory/keep",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "718f2d4f301a317bbb23389d4dc8a4a6c9fc43b82b777183550be37c5796cef2",
+   "format": 1
+  },
+  {
+   "name": "inventory/hosts.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "da718da1c451af0307bc0e5a27309bde897cb1307d73012acef6bd0d9b852792",
+   "format": 1
+  },
+  {
    "name": "foomuuri.yml",
    "ftype": "file",
    "chksum_type": "sha256",
@@ -358,17 +638,17 @@
    "format": 1
   },
   {
-   "name": "docs/index.html",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "faa6ad4088eb2ff8bc316153863519f7cc33bffa2060eb5285d115b9e4e83ce0",
-   "format": 1
-  },
-  {
    "name": "docs/FOOMUURI.md",
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "032203d8b7881868d8218f928a7b632198a2b5775de7633c5cc67c838f932db9",
+   "format": 1
+  },
+  {
+   "name": "docs/index.html",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "ee1652210b23ee5cb5acde197ae4318dca493d294248f3b5419ccc3876ff63be",
    "format": 1
   },
   {
@@ -442,6 +722,34 @@
    "format": 1
   },
   {
+   "name": "playbooks/mariadb",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "playbooks/mariadb/hosts.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "cc56e7fb58ea309ea0ce9d55eac3f5e0ad03eb3dc2600c1ef4b6426e351bbfa6",
+   "format": 1
+  },
+  {
+   "name": "playbooks/mariadb/db-prod-01.example.com.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "334b43f9f4183a90d0a02b444a0078bb9a0d198d8727095b8e23f21a4c56834d",
+   "format": 1
+  },
+  {
+   "name": "playbooks/mariadb/playbook.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "fec921c2fc999b6a43333dc7c883b701b544a0111294bdfdb735786da9711a13",
+   "format": 1
+  },
+  {
    "name": "meta",
    "ftype": "dir",
    "chksum_type": null,
@@ -453,6 +761,34 @@
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "dcb99e9d0010109bb4571c2b11a4e13965efd5374d4f629d3b106a72c47c5181",
+   "format": 1
+  },
+  {
+   "name": ".github",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": ".github/workflows",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": ".github/workflows/ci.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "002d0195cf0e37b700521a99cb052b51d442e1d6ae12044d47165435a175f1ad",
+   "format": 1
+  },
+  {
+   "name": ".github/workflows/release.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2c02310bd3d2832eaa6cee222e37cedf981c0966ca5a43d23f703f703b370605",
    "format": 1
   },
   {
@@ -505,45 +841,52 @@
    "format": 1
   },
   {
-   "name": "README.md",
+   "name": "apache.yml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "d633040856ddbad809a7b3eb8e54156e72bab87fbe29467151ea9d8e69d1bf86",
+   "chksum_sha256": "1bf9c07f1b2b5032cc3e7305b32d55cad6d42b8ecd1f048391b8432fefc5bd71",
    "format": 1
   },
   {
-   "name": "keys",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "keys/mail2_ansible_key",
+   "name": "mariadb.yml",
    "ftype": "file",
-   "chksum_type": null,
-   "chksum_sha256": null,
+   "chksum_type": "sha256",
+   "chksum_sha256": "2b12b25ed30415d245e892773b1a61fd64b4b79902e13d6f15a15af7b7e3c352",
    "format": 1
   },
   {
-   "name": ".zed",
+   "name": ".gitignore",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "64e7cd3d19a6bab74fa0bbe2fd247f19fb071b4d74561a38150ad50a52ca5374",
+   "format": 1
+  },
+  {
+   "name": "vault",
    "ftype": "dir",
    "chksum_type": null,
    "chksum_sha256": null,
    "format": 1
   },
   {
-   "name": ".zed/settings.json",
+   "name": "vault/keep",
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format": 1
   },
   {
-   "name": "apache.yml",
+   "name": "vault/databases.yml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "35f89e130e4207723f2279befc84dc930ba60b628e76a51cacfb185736696bf8",
+   "chksum_sha256": "3656831c813a40590d7c1876fff101334a0332c67ce03eea49bcc0d9c79ef5be",
+   "format": 1
+  },
+  {
+   "name": "README.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "0b75f18aa5b8f7e1f9322a504f74a52fad278a1e7de0356873e47ce303d576f4",
    "format": 1
   }
  ],

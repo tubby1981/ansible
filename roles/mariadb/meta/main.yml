@@ -1,0 +1,31 @@
+---
+galaxy_info:
+  author: tubby1981
+  description: Role for installing, configuring, and managing the MariaDB/MySQL database server, including user, database, and replication management.
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+        - noble
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+        - trixie
+  galaxy_tags:
+    - database
+    - sql
+    - mysql
+    - mariadb
+    - server
+    - replication
+    - linux
+    - debian
+    - ubuntu
+    - system
+    - infrastructure
+
+dependencies: []

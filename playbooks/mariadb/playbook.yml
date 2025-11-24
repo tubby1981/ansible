@@ -1,0 +1,94 @@
+---
+# Example Playbook for MariaDB Role
+# Usage: ansible-playbook -i inventory/hosts.yml playbook.yml
+
+- name: Configure Production MySQL Master Server
+  hosts: db-prod-01.example.com
+  become: yes
+  
+  vars_files:
+    - vault/production.yml  # Contains encrypted passwords
+  
+  roles:
+    - role: mariadb
+      tags: ['mysql', 'database']
+
+- name: Configure Production MySQL Slave Server
+  hosts: db-prod-02.example.com
+  become: yes
+  
+  vars_files:
+    - vault/production.yml
+  
+  roles:
+    - role: mariadb
+      tags: ['mysql', 'database']
+
+- name: Configure Staging MySQL Server
+  hosts: mysql_staging
+  become: yes
+  
+  vars_files:
+    - vault/staging.yml
+  
+  roles:
+    - role: mariadb
+      vars:
+        mysql_root_password: "{{ vault_mysql_staging_root_password }}"
+        mysql_bind_address: '127.0.0.1'  # Local access only
+        mysql_backup_retention_days: 3
+        
+        mysql_databases:
+          - name: staging_app
+            encoding: utf8mb4
+        
+        mysql_users:
+          - name: staging_user
+            host: localhost
+            password: "{{ vault_staging_user_password }}"
+            priv: 'staging_app.*:ALL'
+      tags: ['mysql', 'database']
+
+- name: Configure Development MySQL Server
+  hosts: mysql_development
+  become: yes
+  
+  roles:
+    - role: mariadb
+      vars:
+        mysql_root_password: "development_root_pass"
+        mysql_bind_address: '0.0.0.0'
+        mysql_backup_enabled: false  # No backups in dev
+        
+        # Smaller memory footprint for dev
+        mysql_innodb_buffer_pool_size: "512M"
+        mysql_max_connections: "100"
+        
+        mysql_databases:
+          - name: dev_app
+            encoding: utf8mb4
+        
+        mysql_users:
+          - name: dev_user
+            host: '%'
+            password: "dev_password"
+            priv: '*.*:ALL'  # Full access in development
+      tags: ['mysql', 'database']
+
+# Separate playbook for quick configuration updates
+- name: Update MySQL Configuration Only
+  hosts: database_servers
+  become: yes
+  
+  roles:
+    - role: mariadb
+      tags: ['mysql_config']
+
+# Separate playbook for user management
+- name: Update MySQL Users
+  hosts: database_servers
+  become: yes
+  
+  roles:
+    - role: mariadb
+      tags: ['mysql_users']

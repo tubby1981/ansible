@@ -1,0 +1,217 @@
+---
+# defaults/main.yml - MariaDB/MySQL Role Default Variables
+# These can be overridden in host_vars or group_vars
+
+# ==============================================================================
+# User Configuration
+# ==============================================================================
+
+# User ansible is logging in as - should have root or sudo access
+mariadb_user_home: /root
+mariadb_user_name: root
+mariadb_user_password: root
+
+# Default root user installed by MySQL/MariaDB
+mariadb_root_home: /root
+mariadb_root_username: root
+mariadb_root_password: root
+
+# Force password updates on every run
+mariadb_root_password_update: false
+mariadb_user_password_update: false
+
+# ==============================================================================
+# Service Configuration
+# ==============================================================================
+
+# Enable MySQL/MariaDB service on system startup
+mariadb_enabled_on_startup: true
+
+# Update my.cnf configuration on every run
+mariadb_overwrite_global_mycnf: true
+
+# ==============================================================================
+# Package Configuration
+# ==============================================================================
+
+# Repository configuration (RedHat only)
+# Pass comma-separated list of repos (e.g. "remi,epel")
+mariadb_enablerepo: ""
+
+# Custom package list (leave empty to use OS-specific defaults)
+# When defined, this overrides the default package list from vars/
+mariadb_packages: []
+
+# Python MySQL library for Debian-based systems
+mariadb_python_package_debian: python3-mysqldb
+
+# ==============================================================================
+# Network Configuration
+# ==============================================================================
+
+mariadb_port: "3306"
+mariadb_bind_address: '127.0.0.1'
+mariadb_skip_name_resolve: false
+mariadb_datadir: /var/lib/mysql
+mariadb_sql_mode: ~
+
+# OS-specific paths (auto-detected from vars/)
+# mariadb_pid_file: /var/run/mysqld/mysqld.pid
+# mariadb_socket: /var/lib/mysql/mysql.sock
+# mariadb_config_file: /etc/my.cnf
+# mariadb_config_include_dir: /etc/my.cnf.d
+
+# ==============================================================================
+# Logging Configuration
+# ==============================================================================
+
+mariadb_log_file_group: mysql
+mariadb_log: ""
+
+# Slow query log
+mariadb_slow_query_log_enabled: false
+mariadb_slow_query_time: "2"
+
+# OS-specific log paths (auto-detected from vars/)
+# mariadb_slow_query_log_file: /var/log/mysql/mysql-slow.log
+# mariadb_log_error: /var/log/mysql/mysql.err
+# mariadb_syslog_tag: mysql
+
+# ==============================================================================
+# Performance Tuning (optimized for ~2GB RAM servers)
+# ==============================================================================
+
+# Key buffer (MyISAM)
+mariadb_key_buffer_size: "256M"
+mariadb_max_allowed_packet: "64M"
+mariadb_table_open_cache: "4096"
+mariadb_sort_buffer_size: "2M"
+mariadb_read_buffer_size: "2M"
+mariadb_read_rnd_buffer_size: "8M"
+mariadb_myisam_sort_buffer_size: "64M"
+
+# Thread and connection settings
+mariadb_thread_cache_size: "16"
+mariadb_max_connections: "300"
+
+# Query cache (disabled by default, deprecated in MySQL 8.0+)
+mariadb_query_cache_type: "0"
+mariadb_query_cache_size: "0"
+mariadb_query_cache_limit: "1M"
+
+# Temporary tables
+mariadb_tmp_table_size: "256M"
+mariadb_max_heap_table_size: "256M"
+
+# Other performance settings
+mariadb_group_concat_max_len: "4096"
+mariadb_join_buffer_size: "2M"
+mariadb_wait_timeout: "28800"
+mariadb_lower_case_table_names: "0"
+mariadb_event_scheduler_state: "OFF"
+
+# ==============================================================================
+# InnoDB Configuration
+# ==============================================================================
+
+mariadb_innodb_file_per_table: "1"
+
+# Set buffer pool size to 50-80% of available RAM
+# For 2GB server: 512M-1G recommended
+mariadb_innodb_buffer_pool_size: "1G"
+
+# Log file size should be 25% of buffer pool size
+mariadb_innodb_log_file_size: "256M"
+mariadb_innodb_log_buffer_size: "16M"
+
+# Transaction settings
+mariadb_innodb_flush_log_at_trx_commit: "1"
+mariadb_innodb_lock_wait_timeout: "50"
+
+# Legacy settings (MySQL < 8.0, MariaDB < 10.3)
+mariadb_innodb_large_prefix: "1"
+mariadb_innodb_file_format: "barracuda"
+
+# ==============================================================================
+# Backup Configuration
+# ==============================================================================
+
+# Enable automatic database backups
+mariadb_backup_enabled: true
+
+# Backup schedule (cron format)
+mariadb_backup_hour: "3"
+mariadb_backup_minute: "30"
+
+# Backup retention (days)
+mariadb_backup_retention_days: 7
+
+# Backup directory
+mariadb_backup_dir: /root/backups/mysql
+
+# ==============================================================================
+# mysqldump Configuration
+# ==============================================================================
+
+mariadb_mysqldump_max_allowed_packet: "64M"
+
+# ==============================================================================
+# Additional Configuration Files
+# ==============================================================================
+
+# Include custom configuration files
+mariadb_config_include_files: []
+#  - src: path/relative/to/playbook/file.cnf
+#  - src: path/relative/to/playbook/anotherfile.cnf
+#    force: yes
+
+# ==============================================================================
+# Database Management
+# ==============================================================================
+
+# Databases to create
+mariadb_databases: []
+#  - name: example_db
+#    collation: utf8mb4_general_ci
+#    encoding: utf8mb4
+#    replicate: 1
+#    state: present
+
+# ==============================================================================
+# User Management
+# ==============================================================================
+
+# MySQL users to create
+mariadb_users: []
+#  - name: example_user
+#    host: localhost
+#    password: secret_password
+#    priv: 'example_db.*:ALL'
+#    state: present
+#    append_privs: no
+#    encrypted: no
+
+# ==============================================================================
+# Replication Configuration
+# ==============================================================================
+
+# Replication role: 'master', 'slave', or '' (disabled)
+mariadb_replication_role: ''
+
+# Master server hostname/IP (for slave configuration)
+mariadb_replication_master: ''
+
+# Unique server ID (required for replication)
+mariadb_server_id: "1"
+
+# Binary log settings
+mariadb_max_binlog_size: "100M"
+mariadb_binlog_format: "ROW"
+mariadb_expire_logs_days: "10"
+
+# Replication user credentials
+mariadb_replication_user: {}
+#  name: repl_user
+#  host: '%'
+#  password: repl_password
+#  priv: '*.*:REPLICATION SLAVE,REPLICATION CLIENT'
