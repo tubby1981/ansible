@@ -1,0 +1,132 @@
+---
+# tasks file for php
+
+- name: Check if PHP installation is enabled
+  ansible.builtin.debug:
+    msg: "PHP installation is disabled"
+  when: not php_install_enabled
+
+- name: Install and configure PHP
+  when: php_install_enabled
+  block:
+    - name: Include OS-specific variables
+      ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+
+    - name: Include repository setup tasks
+      ansible.builtin.include_tasks: "setup-{{ ansible_os_family }}.yml"
+
+    - name: Update apt cache (Debian/Ubuntu)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+      changed_when: false
+
+    - name: Install PHP packages
+      ansible.builtin.package:
+        name: "{{ php_packages }}"
+        state: present
+
+    - name: Install PHP extensions
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ php_extensions }}"
+
+    - name: Install optional PHP extensions
+      ansible.builtin.package:
+        name: "php{{ php_version }}-{{ item }}"
+        state: present
+      loop: "{{ php_optional_extensions }}"
+      when: php_optional_extensions | length > 0
+
+    - name: Ensure PHP session directory exists
+      ansible.builtin.file:
+        path: "{{ php_session_save_path }}"
+        state: directory
+        owner: "{{ php_fpm_pool_user }}"
+        group: "{{ php_fpm_pool_group }}"
+        mode: '0755'
+
+    - name: Ensure PHP log directory exists
+      ansible.builtin.file:
+        path: "{{ php_error_log | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Configure PHP CLI php.ini
+      ansible.builtin.template:
+        src: php.ini.j2
+        dest: "{{ php_cli_ini_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart PHP-FPM
+
+    - name: Configure PHP-FPM php.ini
+      ansible.builtin.template:
+        src: php.ini.j2
+        dest: "{{ php_fpm_ini_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart PHP-FPM
+      when: php_fpm_enabled
+
+    - name: Configure PHP-FPM pool
+      ansible.builtin.template:
+        src: www.conf.j2
+        dest: "{{ php_fpm_pool_dir }}/www.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart PHP-FPM
+      when: php_fpm_enabled
+
+    - name: Configure OPcache
+      ansible.builtin.template:
+        src: opcache.ini.j2
+        dest: "{{ php_fpm_conf_dir }}/opcache.ini"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart PHP-FPM
+      when: php_opcache_enabled
+
+    - name: Ensure PHP-FPM service is configured
+      ansible.builtin.service:
+        name: "{{ php_fpm_service_name }}"
+        enabled: "{{ php_fpm_service_enabled }}"
+        state: "{{ php_fpm_service_state }}"
+      when: php_fpm_enabled
+
+    - name: Verify PHP installation
+      ansible.builtin.command:
+        cmd: php -v
+      register: php_verify
+      changed_when: false
+      failed_when: php_verify.rc != 0
+
+    - name: Display PHP version
+      ansible.builtin.debug:
+        msg: "PHP {{ php_version }} successfully installed"
+
+    - name: Create Ansible local facts directory
+      ansible.builtin.file:
+        path: /etc/ansible/facts.d
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Set PHP version fact
+      ansible.builtin.copy:
+        content: |
+          [php]
+          version={{ php_version }}
+        dest: /etc/ansible/facts.d/php.fact
+        owner: root
+        group: root
+        mode: '0644'

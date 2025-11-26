@@ -1,0 +1,30 @@
+---
+# Apache-specific PHP configuration
+
+- name: Enable Apache PHP module
+  community.general.apache2_module:
+    name: "php{{ php_version }}"
+    state: present
+  notify: Restart Apache
+  when: ansible_os_family == "Debian"
+
+- name: Configure Apache to use PHP-FPM
+  ansible.builtin.template:
+    src: php-fpm.conf.j2
+    dest: /etc/apache2/conf-available/php{{ php_version }}-fpm.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Apache
+  when:
+    - php_fpm_enabled
+    - ansible_os_family == "Debian"
+
+- name: Enable PHP-FPM configuration in Apache
+  ansible.builtin.command:
+    cmd: a2enconf php{{ php_version }}-fpm
+  changed_when: false
+  notify: Restart Apache
+  when:
+    - php_fpm_enabled
+    - ansible_os_family == "Debian"

@@ -34,8 +34,8 @@ tags:
   - apache2
   - webserver
   - mariadb
-  - mysql
-  - database
+  - php
+  - phpmyadmin
 
 dependencies: {}
 

@@ -1,0 +1,27 @@
+---
+galaxy_info:
+  author: tubby1981
+  description: Role for installing, configuring, and managing PHP and PHP-FPM with multiple version support
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - php
+    - phpfpm
+    - web
+    - development
+    - performance
+
+dependencies: []

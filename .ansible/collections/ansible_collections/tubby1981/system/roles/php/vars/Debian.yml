@@ -1,0 +1,12 @@
+---
+# Debian/Ubuntu specific variables
+
+php_packages:
+  - "php{{ php_version }}"
+  - "php{{ php_version }}-fpm"
+
+php_fpm_service_name: "php{{ php_version }}-fpm"
+php_cli_ini_path: "/etc/php/{{ php_version }}/cli/php.ini"
+php_fpm_ini_path: "/etc/php/{{ php_version }}/fpm/php.ini"
+php_fpm_pool_dir: "/etc/php/{{ php_version }}/fpm/pool.d"
+php_fpm_conf_dir: "/etc/php/{{ php_version }}/mods-available"

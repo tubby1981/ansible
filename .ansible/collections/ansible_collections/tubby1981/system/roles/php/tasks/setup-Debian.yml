@@ -1,0 +1,58 @@
+---
+# Repository setup for Debian-based systems
+
+- name: Detect if system is Debian or Ubuntu
+  ansible.builtin.set_fact:
+    php_is_debian: "{{ ansible_distribution == 'Debian' }}"
+    php_is_ubuntu: "{{ ansible_distribution == 'Ubuntu' }}"
+
+- name: Install required packages for repository management
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - lsb-release
+      - gnupg
+    state: present
+    update_cache: true
+
+# Ubuntu PPA setup
+- name: Add PHP PPA repository for Ubuntu
+  when:
+    - php_enable_ppa | bool
+    - php_is_ubuntu
+  block:
+    - name: Add PHP PPA signing key
+      ansible.builtin.apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: 4F4EA0AAE5267A6C
+        state: present
+
+    - name: Add PHP PPA repository
+      ansible.builtin.apt_repository:
+        repo: "{{ php_ppa_repository }}"
+        state: present
+        update_cache: true
+
+# Debian Sury repository setup
+- name: Add PHP Sury repository for Debian
+  when:
+    - php_enable_ppa | bool
+    - php_is_debian
+  block:
+    - name: Download Sury PHP repository GPG key
+      ansible.builtin.get_url:
+        url: https://packages.sury.org/php/apt.gpg
+        dest: /usr/share/keyrings/php-sury-archive-keyring.gpg
+        mode: '0644'
+
+    - name: Add Sury PHP repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/php-sury-archive-keyring.gpg] https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
+        state: present
+        filename: php-sury
+        update_cache: true
+
+- name: Display repository information
+  ansible.builtin.debug:
+    msg: "{{ 'Ubuntu PPA' if php_is_ubuntu else 'Debian Sury repository' }} configured for PHP {{ php_version }}"

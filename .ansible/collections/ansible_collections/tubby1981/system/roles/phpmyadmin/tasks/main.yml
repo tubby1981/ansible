@@ -1,0 +1,130 @@
+---
+# tasks file for phpmyadmin
+
+- name: Check if phpMyAdmin installation is enabled
+  ansible.builtin.debug:
+    msg: "phpMyAdmin installation is disabled"
+  when: not phpmyadmin_install_enabled
+
+- name: Install phpMyAdmin
+  when: phpmyadmin_install_enabled
+  block:
+    - name: Verify PHP is installed
+      ansible.builtin.command:
+        cmd: php -v
+      register: phpmyadmin_php_check
+      changed_when: false
+      failed_when: phpmyadmin_php_check.rc != 0
+
+    - name: Check if PHP facts are available
+      ansible.builtin.stat:
+        path: /etc/ansible/facts.d/php.fact
+      register: phpmyadmin_php_facts
+
+    - name: Fail if PHP is not installed via php role
+      ansible.builtin.fail:
+        msg: |
+          PHP must be installed before phpMyAdmin can be configured.
+          Please ensure the 'php' role is executed before the 'phpmyadmin' role.
+      when: not phpmyadmin_php_facts.stat.exists
+
+    - name: Reload Ansible facts
+      ansible.builtin.setup:
+        filter: ansible_local
+      when: phpmyadmin_php_facts.stat.exists
+
+    - name: Set PHP version from facts
+      ansible.builtin.set_fact:
+        phpmyadmin_php_version: "{{ ansible_local.php.version | default('8.1') }}"
+      when: phpmyadmin_php_facts.stat.exists
+
+    - name: Display detected PHP version
+      ansible.builtin.debug:
+        msg: "Detected PHP version: {{ phpmyadmin_php_version }}"
+
+    - name: Update apt cache (Debian/Ubuntu)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+      changed_when: false
+
+    - name: Install phpMyAdmin package
+      ansible.builtin.package:
+        name: "{{ phpmyadmin_package_name }}"
+        state: present
+
+    - name: Ensure configuration directory exists
+      ansible.builtin.file:
+        path: "{{ phpmyadmin_config_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Configure phpMyAdmin config.inc.php
+      ansible.builtin.template:
+        src: config.inc.php.j2
+        dest: "{{ phpmyadmin_config_dir }}/config.inc.php"
+        owner: root
+        group: www-data
+        mode: '0640'
+      notify: Restart webserver
+
+    - name: Verify PHP configuration directory exists
+      ansible.builtin.stat:
+        path: "/etc/php/{{ phpmyadmin_php_version }}/apache2/conf.d"
+      register: phpmyadmin_php_conf_dir
+      when: ansible_os_family == "Debian"
+
+    - name: Configure PHP settings for phpMyAdmin
+      ansible.builtin.template:
+        src: phpmyadmin.ini.j2
+        dest: "/etc/php/{{ phpmyadmin_php_version }}/apache2/conf.d/30-phpmyadmin.ini"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart webserver
+      when:
+        - ansible_os_family == "Debian"
+        - phpmyadmin_php_conf_dir.stat.exists
+
+    - name: Configure access restriction for Apache
+      ansible.builtin.template:
+        src: phpmyadmin.conf.j2
+        dest: /etc/apache2/conf-available/phpmyadmin.conf
+        owner: root
+        group: root
+        mode: '0644'
+      when:
+        - phpmyadmin_webserver_name == "apache2"
+      notify: Restart webserver
+
+    - name: Enable phpMyAdmin Apache configuration
+      ansible.builtin.command:
+        cmd: a2enconf phpmyadmin
+      when:
+        - phpmyadmin_webserver_name == "apache2"
+      changed_when: false
+      notify: Restart webserver
+
+    - name: Configure access restriction for Nginx
+      ansible.builtin.template:
+        src: phpmyadmin_nginx.conf.j2
+        dest: /etc/nginx/snippets/phpmyadmin.conf
+        owner: root
+        group: root
+        mode: '0644'
+      when:
+        - phpmyadmin_webserver_name == "nginx"
+      notify: Restart webserver
+
+    - name: Verify phpMyAdmin installation
+      ansible.builtin.stat:
+        path: "{{ phpmyadmin_web_root }}/index.php"
+      register: phpmyadmin_index
+      failed_when: not phpmyadmin_index.stat.exists
+
+    - name: Display installation status
+      ansible.builtin.debug:
+        msg: "phpMyAdmin successfully installed on {{ ansible_fqdn }} - accessible at /{{ phpmyadmin_url_path }}"

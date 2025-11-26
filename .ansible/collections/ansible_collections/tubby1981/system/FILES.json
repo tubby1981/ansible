@@ -8,76 +8,6 @@
    "format": 1
   },
   {
-   "name": "group_vars",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "group_vars/keep",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "6417f7f3b42fbf5ff83c750ac756060999d9314a0fa3f1c3b92af1138c90b8a1",
-   "format": 1
-  },
-  {
-   "name": "host_vars",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "host_vars/mail.handigerecepten.nl",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "host_vars/mail.handigerecepten.nl/foomuuri.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "e22edae1d0b663987c9d648d63582434890638a1b3ec07dd0e39093a4e6fabf1",
-   "format": 1
-  },
-  {
-   "name": "host_vars/keep",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "445a19ed3e6d753069bf378ba147df39f2108c2c9b895228d050f448a8395944",
-   "format": 1
-  },
-  {
-   "name": "host_vars/mail2.handigerecepten.nl",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "host_vars/mail2.handigerecepten.nl/foomuuri.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "e22edae1d0b663987c9d648d63582434890638a1b3ec07dd0e39093a4e6fabf1",
-   "format": 1
-  },
-  {
-   "name": "host_vars/mail2.handigerecepten.nl/apache.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "9290955c861978a7bc4ccd8092179782c66f4a0735c6f03317b073ad56421db9",
-   "format": 1
-  },
-  {
-   "name": "host_vars/mail2.handigerecepten.nl/mariadb.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "f4c259c8c21058fc5e0531c72c8b9af73cc3f3f742a068df25cc9c696536b315",
-   "format": 1
-  },
-  {
    "name": "roles",
    "ftype": "dir",
    "chksum_type": null,
@@ -596,24 +526,255 @@
    "format": 1
   },
   {
-   "name": "inventory",
+   "name": "roles/phpmyadmin",
    "ftype": "dir",
    "chksum_type": null,
    "chksum_sha256": null,
    "format": 1
   },
   {
-   "name": "inventory/keep",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "718f2d4f301a317bbb23389d4dc8a4a6c9fc43b82b777183550be37c5796cef2",
+   "name": "roles/phpmyadmin/defaults",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
    "format": 1
   },
   {
-   "name": "inventory/hosts.yml",
+   "name": "roles/phpmyadmin/defaults/main.yml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "da718da1c451af0307bc0e5a27309bde897cb1307d73012acef6bd0d9b852792",
+   "chksum_sha256": "4d14a7d9eb875614cccd584ea01381e037d59f466942c3ea8bc35e9ba1ae99bf",
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/tasks",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/tasks/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "51c09ec3debb554fdb0660ee9c7e3cb249618ddabfec486ed86001acd9b9d43b",
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/handlers",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/handlers/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "9421f73123acdb27b0ceeeede4f62861436cbbb15141e4412b888a079d2199cd",
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/templates",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/templates/config.inc.php.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "820af50c3b16fece59f30507932d9268ec11111cd278107b1101e1b83d4030fb",
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/templates/phpmyadmin.ini.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "d94ea131333eeeab6751009bd2b852d73f18c929fa9a391e589d5888db58a417",
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/templates/phpmyadmin.conf.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "0bbaccde67c18666a0683c68e0772b740108ed5769b111fcfc81b5f05de778d0",
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/templates/phpmyadmin_nginx.conf.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "051c27faeaef448f36da4545525f73e85fa62c6e78f3e49470e1d554d7bdea59",
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/meta/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "4483f6009ef92daf239d8bfe30b6490d8223c2bb3d84bb82a9eb6b231c5df8e3",
+   "format": 1
+  },
+  {
+   "name": "roles/phpmyadmin/README.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "b0c46d5515564834338b6aa6360c554dce7fc38f6703111e193a3707b92b04e2",
+   "format": 1
+  },
+  {
+   "name": "roles/php",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/php/defaults",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/php/defaults/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e94929cef9ff7b9a19f8329890fc0226355970a6df800331a5bbe0672fbf289e",
+   "format": 1
+  },
+  {
+   "name": "roles/php/tasks",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/php/tasks/apache.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "4b47629ca262232df0214653ee8a2995ea6ef6c7f523afc5b97afaaaa1e0490d",
+   "format": 1
+  },
+  {
+   "name": "roles/php/tasks/setup-Debian.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "54cc2f22196f63956beb68971ea41cc1ec7ce6a7bcbfaf613ada14b116a56352",
+   "format": 1
+  },
+  {
+   "name": "roles/php/tasks/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "8b329f7aefe52ea1c6a9017780f2309fb5e17754e7adffee451441f1dca95986",
+   "format": 1
+  },
+  {
+   "name": "roles/php/tasks/setup-RedHat.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "133a5508f9b0d0a1ccb1ba8078712d61168d8e8be84020ee1b226a2d8678f178",
+   "format": 1
+  },
+  {
+   "name": "roles/php/handlers",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/php/handlers/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "f3bbed41ba0963a3826e417b7d82dc42cde0b9889bd3828e2b68d730ea0ab89b",
+   "format": 1
+  },
+  {
+   "name": "roles/php/vars",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/php/vars/RedHat.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "d2cb22cf42d1a3d5e6b14799a029fe9a08176a2520a56010516cc794ea357f76",
+   "format": 1
+  },
+  {
+   "name": "roles/php/vars/Debian.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "b4bd7d83b8d247e5cd6d1d478ba7c18e40eaaf81ab1a42ba069f8745695fe6c4",
+   "format": 1
+  },
+  {
+   "name": "roles/php/templates",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/php/templates/php.ini.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "3b2fc5fdcbf74251b783142858157664f0ec09f7820835fc345fdf3cc459b18d",
+   "format": 1
+  },
+  {
+   "name": "roles/php/templates/www.conf.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "c37b3c85d4ed7973bd4fc324a34c252e535424222f7bbbfc842f735949896cec",
+   "format": 1
+  },
+  {
+   "name": "roles/php/templates/opcache.ini.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2d05a2dd3402dec32a415d86a8212af087dc6f7b9f59fc57a26778e6b1084ed6",
+   "format": 1
+  },
+  {
+   "name": "roles/php/templates/php-fpm.conf.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e109725373e34312f85571cd0c9c80c988837efb0a85dcfcca4740437d14dae3",
+   "format": 1
+  },
+  {
+   "name": "roles/php/meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/php/meta/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "322de0a5c1eb4256ad059eaef7756f6ca588230360805216431ab0b934d013cc",
+   "format": 1
+  },
+  {
+   "name": "roles/php/README.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "823d961041db60eb6d5c9addc4f06c947ef41524f26155e92780b922ca8e3115",
    "format": 1
   },
   {
@@ -645,10 +806,38 @@
    "format": 1
   },
   {
+   "name": "docs/APACHE.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "11092bbed8a4754669200345ce1c698bf195daa2af7330843fcef709b2584a6c",
+   "format": 1
+  },
+  {
+   "name": "docs/MARIADB.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "a617b59c736f6508245524886f520490f0cdc0f9c698b7c3fb29c2df8ffaa774",
+   "format": 1
+  },
+  {
+   "name": "docs/PHP.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "823d961041db60eb6d5c9addc4f06c947ef41524f26155e92780b922ca8e3115",
+   "format": 1
+  },
+  {
+   "name": "docs/PHPMYADMIN.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "b0c46d5515564834338b6aa6360c554dce7fc38f6703111e193a3707b92b04e2",
+   "format": 1
+  },
+  {
    "name": "docs/index.html",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "ee1652210b23ee5cb5acde197ae4318dca493d294248f3b5419ccc3876ff63be",
+   "chksum_sha256": "4fb796e4c4e7294f4548c8f20d7b0fcded6a0d7328c0f7efb747f9df1cf55ce0",
    "format": 1
   },
   {
@@ -750,6 +939,34 @@
    "format": 1
   },
   {
+   "name": "playbooks/phpmyadmin",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "playbooks/webserver01.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "132d7899ff7b5d1aaa42f606ecd6d20215dac6cb2cebe4cde3baf3ed687812ae",
+   "format": 1
+  },
+  {
+   "name": "playbooks/php",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "playbooks/php/webserver-setup.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e89ebeda6c7185dcf99ec7a84a68f0866a0a9cb5ef2107d444bd7648d8d85fc3",
+   "format": 1
+  },
+  {
    "name": "meta",
    "ftype": "dir",
    "chksum_type": null,
@@ -761,34 +978,6 @@
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "dcb99e9d0010109bb4571c2b11a4e13965efd5374d4f629d3b106a72c47c5181",
-   "format": 1
-  },
-  {
-   "name": ".github",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": ".github/workflows",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": ".github/workflows/ci.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "002d0195cf0e37b700521a99cb052b51d442e1d6ae12044d47165435a175f1ad",
-   "format": 1
-  },
-  {
-   "name": ".github/workflows/release.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "2c02310bd3d2832eaa6cee222e37cedf981c0966ca5a43d23f703f703b370605",
    "format": 1
   },
   {
@@ -848,20 +1037,6 @@
    "format": 1
   },
   {
-   "name": "mariadb.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "2b12b25ed30415d245e892773b1a61fd64b4b79902e13d6f15a15af7b7e3c352",
-   "format": 1
-  },
-  {
-   "name": ".gitignore",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "64e7cd3d19a6bab74fa0bbe2fd247f19fb071b4d74561a38150ad50a52ca5374",
-   "format": 1
-  },
-  {
    "name": "vault",
    "ftype": "dir",
    "chksum_type": null,
@@ -879,7 +1054,7 @@
    "name": "vault/databases.yml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "3656831c813a40590d7c1876fff101334a0332c67ce03eea49bcc0d9c79ef5be",
+   "chksum_sha256": "3bc2d6bdec4f32f6f6823201618129cec0a5db7c452b3b9121933a146eaa272f",
    "format": 1
   },
   {
@@ -887,6 +1062,27 @@
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "0b75f18aa5b8f7e1f9322a504f74a52fad278a1e7de0356873e47ce303d576f4",
+   "format": 1
+  },
+  {
+   "name": "phpmyadmin.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "39045b3370917d34ed3ab9b062da243f39cd4fb115b2d45bb57f1e1ab0b8b0ee",
+   "format": 1
+  },
+  {
+   "name": "mariadb.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "b1c893f231cad9c089616bce55608b43f914305a90ca5119232b2db6dfe54b07",
+   "format": 1
+  },
+  {
+   "name": "php.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "5c417361134e771b274c9471055c3bbdd817f902edd72aac430f6951f3a6e6cc",
    "format": 1
   }
  ],

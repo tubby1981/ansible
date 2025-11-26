@@ -1,0 +1,93 @@
+---
+# defaults file for php
+
+# General configuration
+php_install_enabled: true
+php_version: "8.2"
+# Supported versions: 7.4, 8.0, 8.1, 8.2, 8.3
+
+# PHP-FPM configuration
+php_fpm_enabled: false
+php_fpm_pool_user: www-data
+php_fpm_pool_group: www-data
+php_fpm_listen: /run/php/php{{ php_version }}-fpm.sock
+php_fpm_listen_owner: www-data
+php_fpm_listen_group: www-data
+php_fpm_listen_mode: "0660"
+
+# PHP-FPM pool configuration
+php_fpm_pm_mode: dynamic
+php_fpm_pm_max_children: 5
+php_fpm_pm_start_servers: 2
+php_fpm_pm_min_spare_servers: 1
+php_fpm_pm_max_spare_servers: 3
+php_fpm_pm_max_requests: 500
+
+# PHP configuration settings
+php_memory_limit: "256M"
+php_max_execution_time: 300
+php_max_input_time: 300
+php_max_input_vars: 3000
+php_post_max_size: "64M"
+php_upload_max_filesize: "64M"
+php_max_file_uploads: 20
+
+# PHP error handling
+php_display_errors: "Off"
+php_display_startup_errors: "Off"
+php_error_reporting: "E_ALL & ~E_DEPRECATED & ~E_STRICT"
+php_log_errors: "On"
+php_error_log: /var/log/php_errors.log
+
+# PHP session configuration
+php_session_save_handler: files
+php_session_save_path: /var/lib/php/sessions
+php_session_gc_maxlifetime: 1440
+
+# Timezone configuration
+php_timezone: "Europe/Amsterdam"
+
+# OPcache configuration
+php_opcache_enabled: true
+php_opcache_memory_consumption: 128
+php_opcache_interned_strings_buffer: 8
+php_opcache_max_accelerated_files: 4000
+php_opcache_revalidate_freq: 60
+php_opcache_fast_shutdown: 1
+
+# Required PHP extensions
+php_extensions:
+  - "php{{ php_version }}-cli"
+  - "php{{ php_version }}-fpm"
+  - "php{{ php_version }}-common"
+  - "php{{ php_version }}-mysql"
+  - "php{{ php_version }}-zip"
+  - "php{{ php_version }}-gd"
+  - "php{{ php_version }}-mbstring"
+  - "php{{ php_version }}-curl"
+  - "php{{ php_version }}-xml"
+  - "php{{ php_version }}-bcmath"
+  - "php-json"
+
+# Optional PHP extensions (commented out by default)
+php_optional_extensions: []
+#  - redis
+#  - memcached
+#  - imagick
+#  - intl
+#  - soap
+#  - ldap
+
+# Webserver integration
+php_webserver_name: apache2
+# Options: apache2, nginx
+
+# Repository configuration
+php_enable_ppa: true
+# For Ubuntu: Uses ppa:ondrej/php
+# For Debian: Uses packages.sury.org/php
+php_ppa_repository: "ppa:ondrej/php"
+
+# Service management
+php_fpm_service_enabled: true
+php_fpm_service_state: started

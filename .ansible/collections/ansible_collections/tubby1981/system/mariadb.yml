@@ -1,5 +1,5 @@
 ---
-- name: Configure Production MySQL Master Server
+- name: Configure MariaDB (MySQL) database server
   hosts: all
   become: yes
   

@@ -1,0 +1,8 @@
+---
+# handlers file for phpmyadmin
+
+- name: Restart webserver
+  ansible.builtin.service:
+    name: "{{ phpmyadmin_webserver_name }}"
+    state: restarted
+  become: true

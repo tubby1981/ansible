@@ -1,0 +1,38 @@
+---
+- name: Setup web server with PHP and phpMyAdmin
+  hosts: webservers
+  become: true
+  
+  vars:
+    # PHP configuration
+    php_version: "8.2"
+    php_memory_limit: "512M"
+    php_upload_max_filesize: "128M"
+    php_post_max_size: "128M"
+    
+    # phpMyAdmin configuration
+    phpmyadmin_url_path: phpmydinges
+    phpmyadmin_restrict_access: true
+    phpmyadmin_allowed_hosts:
+      - "192.168.1.0/24"
+      - "10.0.0.100"
+
+  roles:
+    # PHP MUST be installed first
+    - role: php
+      vars:
+        php_fpm_enabled: true
+        php_optional_extensions:
+          - redis
+          - imagick
+    
+    # phpMyAdmin depends on PHP being installed
+    - role: phpmyadmin
+
+  post_tasks:
+    - name: Display access information
+      ansible.builtin.debug:
+        msg:
+          - "Web server setup complete!"
+          - "PHP {{ php_version }} installed"
+          - "phpMyAdmin accessible at: http://{{ ansible_fqdn }}/{{ phpmyadmin_url_path }}"

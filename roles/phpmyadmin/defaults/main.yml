@@ -1,0 +1,32 @@
+---
+# defaults file for phpmyadmin
+
+# General configuration
+phpmyadmin_install_enabled: true
+phpmyadmin_package_name: phpmyadmin
+phpmyadmin_webserver_name: apache2
+phpmyadmin_config_dir: /etc/phpmyadmin
+phpmyadmin_web_root: /usr/share/phpmyadmin
+
+# URL path configuration
+phpmyadmin_url_path: phpmyadmin
+# Example: set to 'phpmydinges' to access via domain.com/phpmydinges
+# Example: set to 'secretdbadmin' for obscurity
+
+# PHP configuration
+phpmyadmin_upload_max_filesize: "64M"
+phpmyadmin_post_max_size: "64M"
+phpmyadmin_memory_limit: "256M"
+
+# Security configuration
+phpmyadmin_restrict_access: false
+phpmyadmin_allowed_hosts: []
+#  - "192.168.1.0/24"
+#  - "10.0.0.100"
+
+# Blowfish secret for cookie authentication (should be overridden in production)
+phpmyadmin_blowfish_secret: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+
+# Database configuration
+phpmyadmin_allow_arbitrary_server: false
+phpmyadmin_default_server: localhost

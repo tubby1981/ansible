@@ -1,0 +1,23 @@
+---
+# Repository setup for RedHat-based systems
+
+- name: Enable EPEL repository
+  ansible.builtin.package:
+    name: epel-release
+    state: present
+  when: ansible_distribution_major_version | int <= 8
+
+- name: Enable Remi repository
+  ansible.builtin.dnf:
+    name: "https://rpms.remirepo.net/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm"
+    state: present
+    disable_gpg_check: true
+  when: php_enable_ppa | bool
+
+- name: Enable Remi PHP module stream
+  ansible.builtin.command:
+    cmd: "dnf module reset php -y && dnf module enable php:remi-{{ php_version }} -y"
+  changed_when: false
+  when:
+    - ansible_distribution_major_version | int >= 8
+    - php_enable_ppa | bool

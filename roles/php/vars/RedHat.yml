@@ -1,0 +1,14 @@
+---
+# RedHat/CentOS specific variables
+
+php_packages:
+  - "php{{ php_version | replace('.', '') }}"
+  - "php{{ php_version | replace('.', '') }}-fpm"
+
+php_extension_packages: "{{ php_extensions | map('regex_replace', '^(.*)$', 'php' + (php_version | replace('.', '')) + '-\\1') | list }}"
+
+php_fpm_service_name: "php-fpm"
+php_cli_ini_path: "/etc/php.ini"
+php_fpm_ini_path: "/etc/php.ini"
+php_fpm_pool_dir: "/etc/php-fpm.d"
+php_fpm_conf_dir: "/etc/php.d"

@@ -1,0 +1,25 @@
+---
+# Host-specific phpMyAdmin configuration for webserver01
+
+phpmyadmin_install_enabled: true
+phpmyadmin_webserver_name: apache2
+
+# Custom URL path - access via domain.com/phpmydinges instead of domain.com/phpmyadmin
+phpmyadmin_url_path: phpmydinges
+
+# Security settings - restrict access
+phpmyadmin_restrict_access: true
+phpmyadmin_allowed_hosts:
+  - "192.168.1.0/24"       # Local network
+  - "10.0.0.100"           # Specific admin IP
+  - "172.16.50.0/24"       # VPN network
+
+# Increase PHP limits for larger databases
+phpmyadmin_upload_max_filesize: "256M"
+phpmyadmin_post_max_size: "256M"
+phpmyadmin_memory_limit: "512M"
+
+# Security configuration
+phpmyadmin_blowfish_secret: "change-this-to-a-secure-32char-string!"
+phpmyadmin_allow_arbitrary_server: false
+phpmyadmin_default_server: localhost
