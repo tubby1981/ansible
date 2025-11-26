@@ -78,7 +78,7 @@
     removes: "{{ apache_sites_enabled_dir }}/000-default.conf"
   register: apache_default_vhost_disabled
   changed_when: "'Site 000-default disabled.' in apache_default_vhost_disabled.stdout"
-  notify: restart apache
+  notify: Restart apache
   when:
     - apache_enabled
     - ansible_os_family == "Debian"
@@ -93,7 +93,7 @@
     group: root
     mode: '0644'
     backup: true
-  notify: restart apache
+  notify: Restart apache
   when: apache_enabled
   tags: [apache, configuration]
 
@@ -104,7 +104,7 @@
     owner: root
     group: root
     mode: '0644'
-  notify: restart apache
+  notify: Restart apache
   when: apache_enabled
   tags: [apache, configuration]
 
@@ -115,7 +115,7 @@
     owner: root
     group: root
     mode: '0644'
-  notify: restart apache
+  notify: Restart apache
   when: apache_enabled
   tags: [apache, configuration, ssl]
 
@@ -126,7 +126,7 @@
     owner: root
     group: root
     mode: '0644'
-  notify: restart apache
+  notify: Restart apache
   when: apache_enabled
   tags: [apache, configuration]
 
@@ -137,7 +137,7 @@
     owner: root
     group: root
     mode: '0644'
-  notify: restart apache
+  notify: Restart apache
   when: apache_enabled
   tags: [apache, configuration, ports]
 
@@ -148,7 +148,7 @@
     owner: root
     group: root
     mode: '0644'
-  notify: restart apache
+  notify: Restart apache
   when:
     - apache_enabled
     - ansible_os_family == "Debian"
@@ -162,7 +162,7 @@
   when:
     - apache_enabled
     - ansible_os_family == "Debian"
-  notify: restart apache
+  notify: Restart apache
   tags: [apache, configuration, security]
 
 # --------------------------------------------------------------------
@@ -176,7 +176,7 @@
   when:
     - apache_enabled
     - ansible_os_family == "Debian"
-  notify: restart apache
+  notify: Restart apache
   tags: [apache, modules]
 
 - name: Enable ssl module when SSL ports or ssl vhosts are defined
@@ -187,7 +187,7 @@
     - apache_enabled
     - (apache_ssl_ports | length) > 0 or (apache_vhosts | selectattr('ssl','defined') | list | length) > 0
     - ansible_os_family == "Debian"
-  notify: restart apache
+  notify: Restart apache
   tags: [apache, modules, ssl]
 
 # --------------------------------------------------------------------
@@ -216,7 +216,7 @@
     mode: '0644'
   loop: "{{ apache_vhosts }}"
   when: apache_enabled and (item.enabled | default(true))
-  notify: restart apache
+  notify: Restart apache
   tags: [apache, vhosts, configuration]
 
 - name: Enable Apache VHosts (symlink sites-enabled)
@@ -226,7 +226,7 @@
     state: link
   loop: "{{ apache_vhosts }}"
   when: apache_enabled and (item.enabled | default(true))
-  notify: restart apache
+  notify: Restart apache
   tags: [apache, vhosts]
 
 # --------------------------------------------------------------------
@@ -476,7 +476,7 @@
     - apache_certbot_enabled
     - apache_certbot_challenge_method == "dns"
     - not item.skipped | default(false)
-  notify: restart apache
+  notify: Restart apache
   tags: [certbot, letsencrypt, dns-01]
 
 - name: "Enable SSL VHost configuration (DNS-01 only)"
@@ -489,7 +489,7 @@
     - apache_certbot_enabled
     - apache_certbot_challenge_method == "dns"
     - not item.skipped | default(false)
-  notify: restart apache
+  notify: Restart apache
   tags: [certbot, letsencrypt, dns-01]
 
 - name: Display Certbot results

@@ -1,7 +1,7 @@
 ---
 namespace: tubby1981
 name: system
-version: 1.0.2
+version: 1.0.3
 readme: README.md
 authors:
   - Tubby1981 <tubby1981@users.noreply.github.com>
@@ -10,8 +10,8 @@ description: >-
   Ansible collection for Linux system management featuring Foomuuri -
   a modern multizone bidirectional nftables firewall with advanced NAT,
   dynamic IP lists, and comprehensive security features. **Now also includes
-  comprehensive roles for managing the Apache2 webserver and the MariaDB
-  database server.
+  comprehensive roles for managing the Apache2 webserver, the MariaDB
+  database server, and support for PHP and phpMyAdmin.**
 
 license: MIT
 
