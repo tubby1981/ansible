@@ -1,0 +1,30 @@
+---
+# roles/package_manager/meta/main.yml
+# Metadata for the package_manager role
+
+galaxy_info:
+  author: tubby1981
+  description: Role for installing, configuring and managging for package management on Linux systems
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: EL
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+  galaxy_tags:
+    - package
+    - system
+    - apt
+    - yum
+    - dnf
+
+dependencies: []

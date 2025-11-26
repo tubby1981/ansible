@@ -1,17 +1,18 @@
 ---
 # -------------------------------------------------
-# Apache Role – Main Tasks (Improved)
+# Apache Role – Main Tasks
 # -------------------------------------------------
 
 - name: "Include OS-specific variables (optional)"
-  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+  include_vars: "{{ ansible_os_family }}.yml"
+  ignore_errors: true
   tags: [apache, configuration]
 
 # --------------------------------------------------------------------
 # 1. Install Apache package
 # --------------------------------------------------------------------
 - name: Install Apache webserver
-  ansible.builtin.package:
+  package:
     name: "{{ apache_package_name }}"
     state: present
   when: apache_enabled
@@ -21,7 +22,7 @@
 # 2. Ensure Apache environment variables are set (Debian/Ubuntu)
 # --------------------------------------------------------------------
 - name: Deploy Apache envvars file (Debian/Ubuntu)
-  ansible.builtin.copy:
+  copy:
     src: envvars
     dest: "{{ apache_config_dir }}/envvars"
     owner: root
@@ -33,7 +34,7 @@
   tags: [apache, configuration]
 
 - name: Ensure Apache runtime directory exists
-  ansible.builtin.file:
+  file:
     path: "/var/run/apache2"
     state: directory
     owner: root
@@ -45,7 +46,7 @@
   tags: [apache, configuration]
 
 - name: Ensure Apache lock directory exists
-  ansible.builtin.file:
+  file:
     path: "/var/lock/apache2"
     state: directory
     owner: "{{ apache_run_user | default('www-data') }}"
@@ -56,82 +57,23 @@
     - ansible_os_family == "Debian"
   tags: [apache, configuration]
 
-- name: Ensure Apache cgid sockets directory exists
-  ansible.builtin.file:
-    path: "/var/run/apache2/socks"
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-  when:
-    - apache_enabled
-    - ansible_os_family == "Debian"
-  tags: [apache, configuration]
-
 # --------------------------------------------------------------------
 # 3. Deploy main Apache configuration and ports.conf
 # --------------------------------------------------------------------
-
-- name: Disable default VHost (000-default.conf)
-  ansible.builtin.command: a2dissite 000-default
-  args:
-    removes: "{{ apache_sites_enabled_dir }}/000-default.conf"
-  register: apache_default_vhost_disabled
-  changed_when: "'Site 000-default disabled.' in apache_default_vhost_disabled.stdout"
-  notify: Restart apache
-  when:
-    - apache_enabled
-    - ansible_os_family == "Debian"
-    - apache_disable_default_vhost | default(true) # Voeg een variabele toe om het te kunnen overschrijven
-  tags: [apache, vhosts, cleanup]
-
 - name: Deploy main Apache configuration (apache2.conf)
-  ansible.builtin.template:
+  template:
     src: apache2.conf.j2
     dest: "{{ apache_config_dir }}/apache2.conf"
     owner: root
     group: root
     mode: '0644'
-    backup: true
-  notify: Restart apache
-  when: apache_enabled
-  tags: [apache, configuration]
-
-- name: Deploy other-vhosts-access-log configuration (Fix AH02297)
-  ansible.builtin.template:
-    src: other-vhosts-access-log.conf.j2
-    dest: "{{ apache_config_dir }}/conf-available/other-vhosts-access-log.conf"
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Restart apache
-  when: apache_enabled
-  tags: [apache, configuration]
-
-- name: Deploy SSL module configuration (Fix APACHE_RUN_DIR)
-  ansible.builtin.template:
-    src: ssl.conf.j2
-    dest: "{{ apache_config_dir }}/mods-available/ssl.conf"
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Restart apache
-  when: apache_enabled
-  tags: [apache, configuration, ssl]
-
-- name: Deploy CGID module configuration (Fix APACHE_RUN_DIR)
-  ansible.builtin.template:
-    src: cgid.conf.j2
-    dest: "{{ apache_config_dir }}/mods-available/cgid.conf"
-    owner: root
-    group: root
-    mode: '0644'
+    backup: yes
   notify: Restart apache
   when: apache_enabled
   tags: [apache, configuration]
 
 - name: Deploy Apache ports configuration
-  ansible.builtin.template:
+  template:
     src: ports.conf.j2
     dest: "{{ apache_config_dir }}/ports.conf"
     owner: root
@@ -142,7 +84,7 @@
   tags: [apache, configuration, ports]
 
 - name: Deploy Apache security configuration
-  ansible.builtin.template:
+  template:
     src: security.conf.j2
     dest: "{{ apache_config_dir }}/conf-available/security.conf"
     owner: root
@@ -155,7 +97,7 @@
   tags: [apache, configuration, security]
 
 - name: Enable security configuration
-  ansible.builtin.file:
+  file:
     src: "{{ apache_config_dir }}/conf-available/security.conf"
     dest: "{{ apache_config_dir }}/conf-enabled/security.conf"
     state: link
@@ -169,7 +111,7 @@
 # 4. Enable required Apache modules
 # --------------------------------------------------------------------
 - name: Enable common Apache modules
-  community.general.apache2_module:
+  apache2_module:
     name: "{{ item }}"
     state: present
   loop: "{{ apache_modules_enabled }}"
@@ -180,7 +122,7 @@
   tags: [apache, modules]
 
 - name: Enable ssl module when SSL ports or ssl vhosts are defined
-  community.general.apache2_module:
+  apache2_module:
     name: "ssl"
     state: present
   when:
@@ -194,7 +136,7 @@
 # 5. Ensure document root directories exist (per vhost)
 # --------------------------------------------------------------------
 - name: Create document root directories for VHosts
-  ansible.builtin.file:
+  file:
     path: "{{ item.document_root | default(apache_document_root) }}"
     state: directory
     owner: www-data
@@ -208,7 +150,7 @@
 # 6. Deploy VHost configuration files
 # --------------------------------------------------------------------
 - name: Deploy Apache VHost configuration files
-  ansible.builtin.template:
+  template:
     src: vhost.conf.j2
     dest: "{{ apache_sites_available_dir }}/{{ item.server_name }}.conf"
     owner: root
@@ -220,7 +162,7 @@
   tags: [apache, vhosts, configuration]
 
 - name: Enable Apache VHosts (symlink sites-enabled)
-  ansible.builtin.file:
+  file:
     src: "{{ apache_sites_available_dir }}/{{ item.server_name }}.conf"
     dest: "{{ apache_sites_enabled_dir }}/{{ item.server_name }}.conf"
     state: link
@@ -233,7 +175,7 @@
 # 7. Validate Apache configuration before continuing
 # --------------------------------------------------------------------
 - name: Test Apache configuration syntax
-  ansible.builtin.command: apache2ctl configtest
+  command: apache2ctl configtest
   register: apache_configtest
   changed_when: false
   failed_when: false
@@ -243,7 +185,7 @@
   tags: [apache, validation]
 
 - name: Display Apache configuration test results
-  ansible.builtin.debug:
+  debug:
     msg: "{{ apache_configtest.stderr_lines }}"
   when:
     - apache_enabled
@@ -252,7 +194,7 @@
   tags: [apache, validation]
 
 - name: Fail if Apache configuration is invalid
-  ansible.builtin.fail:
+  fail:
     msg: |
       Apache configuration test failed!
       Please review the configuration errors above.
@@ -267,7 +209,7 @@
 # 8. Start Apache before Certbot (required for HTTP-01 challenge)
 # --------------------------------------------------------------------
 - name: Ensure Apache is started before requesting certificates
-  ansible.builtin.service:
+  service:
     name: "{{ apache_service_name }}"
     state: started
     enabled: true
@@ -280,14 +222,14 @@
 # 9. Certbot / Let's Encrypt (with pre-flight checks)
 # --------------------------------------------------------------------
 - name: Install Certbot and required plugins
-  ansible.builtin.package:
+  package:
     name: "{{ apache_certbot_packages }}"
     state: present
   when: apache_certbot_enabled
   tags: [certbot, letsencrypt]
 
 - name: Verify Certbot email is configured
-  ansible.builtin.fail:
+  fail:
     msg: "apache_certbot_email must be set when apache_certbot_enabled is true"
   when:
     - apache_certbot_enabled
@@ -298,44 +240,44 @@
 # HTTP-01 Challenge: DNS verification
 # --------------------------------------------------------------------
 - name: "Pre-flight (HTTP-01): Check DNS resolution for Let's Encrypt domains (aliases)"
-  ansible.builtin.command: "host {{ item.1 }}"
+  command: "host {{ item.1 }}"
   loop: "{{ apache_vhosts | subelements('aliases', skip_missing=True) }}"
   when:
     - apache_certbot_enabled
     - apache_certbot_challenge_method == "http"
     - (item.0.enabled | default(true))
     - (item.0.with_letsencrypt | default(false))
-  register: apache_dns_check
+  register: dns_check
   failed_when: false
   changed_when: false
   tags: [certbot, letsencrypt, preflight, http-01]
 
 - name: "Pre-flight (HTTP-01): Check DNS resolution for primary domain"
-  ansible.builtin.command: "host {{ item.server_name }}"
+  command: "host {{ item.server_name }}"
   loop: "{{ apache_vhosts }}"
   when:
     - apache_certbot_enabled
     - apache_certbot_challenge_method == "http"
     - (item.enabled | default(true))
     - (item.with_letsencrypt | default(false))
-  register: apache_dns_check_primary
+  register: dns_check_primary
   failed_when: false
   changed_when: false
   tags: [certbot, letsencrypt, preflight, http-01]
 
 - name: "Pre-flight (HTTP-01): Report DNS check results"
-  ansible.builtin.debug:
+  debug:
     msg: |
       ⚠️  DNS CHECK WARNING ⚠️
 
       The following domains are not correctly configured in DNS:
-      {% for result in apache_dns_check.results | default([]) %}
-      {% if result.rc != 0 %}
+      {% for result in dns_check.results | default([]) %}
+      {% if result.rc is defined and result.rc != 0 %}
         - {{ result.item.1 }} (alias of {{ result.item.0.server_name }})
       {% endif %}
       {% endfor %}
-      {% for result in apache_dns_check_primary.results | default([]) %}
-      {% if result.rc != 0 %}
+      {% for result in dns_check_primary.results | default([]) %}
+      {% if result.rc is defined and result.rc != 0 %}
         - {{ result.item.server_name }} (primary domain)
       {% endif %}
       {% endfor %}
@@ -345,33 +287,44 @@
   when:
     - apache_certbot_enabled
     - apache_certbot_challenge_method == "http"
-    - (apache_dns_check.results | default([]) | selectattr('rc', 'ne', 0) | list | length > 0) or
-      (apache_dns_check_primary.results | default([]) | selectattr('rc', 'ne', 0) | list | length > 0)
+    - (
+        dns_check.results | default([])
+        | selectattr('rc','defined')
+        | selectattr('rc','ne',0)
+        | list | length > 0
+      )
+      or
+      (
+        dns_check_primary.results | default([])
+        | selectattr('rc','defined')
+        | selectattr('rc','ne',0)
+        | list | length > 0
+      )  
   tags: [certbot, letsencrypt, preflight, http-01]
 
 - name: "Pre-flight (HTTP-01): Fail if DNS is not configured"
-  ansible.builtin.fail:
+  fail:
     msg: |
       ❌ Let's Encrypt cannot proceed: DNS records are missing!
-
+      
       Verify that all domains correctly point to {{ ansible_default_ipv4.address | default('this server') }}.
       Use 'dig' or 'nslookup' to verify DNS configuration.
   when:
     - apache_certbot_enabled
     - apache_certbot_challenge_method == "http"
-    - apache_certbot_strict_apache_dns_check | default(true)
-    - (apache_dns_check.results | default([]) | selectattr('rc', 'ne', 0) | list | length > 0) or
-      (apache_dns_check_primary.results | default([]) | selectattr('rc', 'ne', 0) | list | length > 0)
+    - apache_certbot_strict_dns_check | default(true)
+    - (dns_check.results | default([]) | selectattr('rc', 'ne', 0) | list | length > 0) or
+      (dns_check_primary.results | default([]) | selectattr('rc', 'ne', 0) | list | length > 0)
   tags: [certbot, letsencrypt, preflight, http-01]
 
 # --------------------------------------------------------------------
 # DNS-01 Challenge: Verify DNS provider credentials
 # --------------------------------------------------------------------
 - name: "Pre-flight (DNS-01): Verify DNS provider plugin is configured"
-  ansible.builtin.fail:
+  fail:
     msg: |
       ❌ DNS-01 challenge requires apache_certbot_dns_provider to be set!
-
+      
       Supported providers: cloudflare, route53, digitalocean, google, etc.
       Example: apache_certbot_dns_provider: "cloudflare"
   when:
@@ -381,12 +334,12 @@
   tags: [certbot, letsencrypt, preflight, dns-01]
 
 - name: "Pre-flight (DNS-01): Verify DNS credentials file exists"
-  ansible.builtin.fail:
+  fail:
     msg: |
       ❌ DNS-01 challenge requires apache_certbot_dns_credentials_file to be set!
-
+      
       Example: apache_certbot_dns_credentials_file: "/root/.secrets/certbot/cloudflare.ini"
-
+      
       See README.md for credential file format per DNS provider.
   when:
     - apache_certbot_enabled
@@ -395,7 +348,7 @@
   tags: [certbot, letsencrypt, preflight, dns-01]
 
 - name: "Pre-flight (DNS-01): Create credentials directory"
-  ansible.builtin.file:
+  file:
     path: "{{ apache_certbot_dns_credentials_file | dirname }}"
     state: directory
     owner: root
@@ -408,7 +361,7 @@
   tags: [certbot, letsencrypt, dns-01]
 
 - name: "Pre-flight (DNS-01): Deploy DNS credentials file"
-  ansible.builtin.copy:
+  copy:
     dest: "{{ apache_certbot_dns_credentials_file }}"
     content: "{{ apache_certbot_dns_credentials_content }}"
     owner: root
@@ -425,7 +378,7 @@
 # Obtain Let's Encrypt certificates
 # --------------------------------------------------------------------
 - name: "Obtain Let's Encrypt certificates (HTTP-01 challenge)"
-  ansible.builtin.command: >-
+  command: >-
     certbot --apache
       --non-interactive
       --agree-tos
@@ -438,13 +391,13 @@
     - apache_certbot_challenge_method == "http"
     - (item.enabled | default(true))
     - (item.with_letsencrypt | default(false))
-  register: apache_certbot_result_http
-  changed_when: "'Congratulations' in apache_certbot_result_http.stdout or 'Successfully received certificate' in apache_certbot_result_http.stdout"
-  failed_when: apache_certbot_result_http.rc != 0 and 'Certificate not yet due for renewal' not in apache_certbot_result_http.stdout
+  register: certbot_result_http
+  changed_when: "'Congratulations' in certbot_result_http.stdout or 'Successfully received certificate' in certbot_result_http.stdout"
+  failed_when: certbot_result_http.rc != 0 and 'Certificate not yet due for renewal' not in certbot_result_http.stdout
   tags: [certbot, letsencrypt, certificates, http-01]
 
 - name: "Obtain Let's Encrypt certificates (DNS-01 challenge)"
-  ansible.builtin.command: >-
+  command: >-
     certbot certonly
       --non-interactive
       --agree-tos
@@ -459,19 +412,19 @@
     - apache_certbot_challenge_method == "dns"
     - (item.enabled | default(true))
     - (item.with_letsencrypt | default(false))
-  register: apache_certbot_result_dns
-  changed_when: "'Congratulations' in apache_certbot_result_dns.stdout or 'Successfully received certificate' in apache_certbot_result_dns.stdout"
-  failed_when: apache_certbot_result_dns.rc != 0 and 'Certificate not yet due for renewal' not in apache_certbot_result_dns.stdout
+  register: certbot_result_dns
+  changed_when: "'Congratulations' in certbot_result_dns.stdout or 'Successfully received certificate' in certbot_result_dns.stdout"
+  failed_when: certbot_result_dns.rc != 0 and 'Certificate not yet due for renewal' not in certbot_result_dns.stdout
   tags: [certbot, letsencrypt, certificates, dns-01]
 
 - name: "Configure Apache to use Let's Encrypt certificates (DNS-01 only)"
-  ansible.builtin.template:
+  template:
     src: vhost-ssl.conf.j2
     dest: "{{ apache_sites_available_dir }}/{{ item.item.server_name }}-le-ssl.conf"
     owner: root
     group: root
     mode: '0644'
-  loop: "{{ apache_certbot_result_dns.results | default([]) }}"
+  loop: "{{ certbot_result_dns.results | default([]) }}"
   when:
     - apache_certbot_enabled
     - apache_certbot_challenge_method == "dns"
@@ -480,11 +433,11 @@
   tags: [certbot, letsencrypt, dns-01]
 
 - name: "Enable SSL VHost configuration (DNS-01 only)"
-  ansible.builtin.file:
+  file:
     src: "{{ apache_sites_available_dir }}/{{ item.item.server_name }}-le-ssl.conf"
     dest: "{{ apache_sites_enabled_dir }}/{{ item.item.server_name }}-le-ssl.conf"
     state: link
-  loop: "{{ apache_certbot_result_dns.results | default([]) }}"
+  loop: "{{ certbot_result_dns.results | default([]) }}"
   when:
     - apache_certbot_enabled
     - apache_certbot_challenge_method == "dns"
@@ -493,12 +446,12 @@
   tags: [certbot, letsencrypt, dns-01]
 
 - name: Display Certbot results
-  ansible.builtin.debug:
+  debug:
     msg: |
       ✅ Certificate successfully obtained for: {{ item.item.server_name }}
       Domains: {{ ([item.item.server_name] + (item.item.aliases | default([]))) | join(', ') }}
       Challenge method: {{ apache_certbot_challenge_method | upper }}
-  loop: "{{ (apache_certbot_result_http.results | default([])) + (apache_certbot_result_dns.results | default([])) }}"
+  loop: "{{ (certbot_result_http.results | default([])) + (certbot_result_dns.results | default([])) }}"
   when:
     - item.changed | default(false)
     - not item.skipped | default(false)
@@ -508,7 +461,7 @@
 # Setup automatic certificate renewal
 # --------------------------------------------------------------------
 - name: Setup automatic certificate renewal (systemd timer)
-  ansible.builtin.systemd:
+  systemd:
     name: certbot.timer
     enabled: true
     state: started
@@ -519,7 +472,7 @@
   tags: [certbot, renewal]
 
 - name: Setup automatic certificate renewal (cron)
-  ansible.builtin.cron:
+  cron:
     name: "Certbot certificate renewal"
     minute: "0"
     hour: "2"

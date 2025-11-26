@@ -1,0 +1,16 @@
+---
+# roles/package_manager/defaults/main.yml
+# Default variables for the package_manager role
+
+# Desired state of the packages
+# Acceptable values: present, absent, latest
+package_manager_state: present
+
+# List of packages to manage
+package_manager_names: []
+
+# Autoremove obsolete packages (mainly for Debian family)
+package_manager_autoremove_enabled: false
+
+# Update cache before installation/update
+package_manager_update_cache: true

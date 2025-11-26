@@ -1,0 +1,38 @@
+---
+# example_playbook.yml
+# Example playbook demonstrating the package_manager role
+
+- name: Demonstration of package_manager role
+  hosts: all
+  become: true
+  
+  tasks:
+    - name: Install development tools
+      ansible.builtin.include_role:
+        name: package_manager
+      vars:
+        package_manager_names:
+          - git
+          - vim
+          - curl
+          - wget
+        package_manager_state: present
+        package_manager_update_cache: true
+    
+    - name: Update security tools to latest version
+      ansible.builtin.include_role:
+        name: package_manager
+      vars:
+        package_manager_names:
+          - openssh-server
+          - fail2ban
+        package_manager_state: latest
+    
+    - name: Remove legacy software
+      ansible.builtin.include_role:
+        name: package_manager
+      vars:
+        package_manager_names:
+          - telnet
+        package_manager_state: absent
+        package_manager_autoremove_enabled: true

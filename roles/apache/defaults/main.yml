@@ -49,6 +49,7 @@ apache_modules_enabled:
   - rewrite
   - ssl
   - headers
+  - php8.4
 
 # -------------------------------------------------
 # Virtual hosts (override in host_vars or group_vars)

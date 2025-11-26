@@ -1,0 +1,7 @@
+---
+# roles/package_manager/handlers/main.yml
+# Handlers for the package_manager role
+
+# This file is intentionally left empty as the package_manager role
+# does not require any handlers. It is included for completeness
+# and to follow Ansible role best practices.

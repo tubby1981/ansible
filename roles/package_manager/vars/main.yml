@@ -1,0 +1,7 @@
+---
+# roles/package_manager/vars/main.yml
+# Variables for the package_manager role
+
+# This file can be used to define role-specific variables that should not
+# be overridden by users. Currently, all configurable variables are defined
+# in defaults/main.yml to allow easy customization.

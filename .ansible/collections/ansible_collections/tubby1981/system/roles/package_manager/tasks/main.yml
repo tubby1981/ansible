@@ -1,0 +1,73 @@
+---
+# roles/package_manager/tasks/main.yml
+# Main tasks for package management
+
+- name: Validate package_manager_state variable
+  ansible.builtin.assert:
+    that:
+      - package_manager_state in ['present', 'absent', 'latest']
+    fail_msg: "package_manager_state must be one of: present, absent, latest"
+    success_msg: "package_manager_state validation passed"
+  tags:
+    - package_manager
+    - validation
+
+- name: Validate package_manager_names variable
+  ansible.builtin.assert:
+    that:
+      - package_manager_names is defined
+      - package_manager_names is iterable
+      - package_manager_names | length > 0
+    fail_msg: "package_manager_names must be defined and contain at least one package"
+    success_msg: "package_manager_names validation passed"
+  tags:
+    - package_manager
+    - validation
+
+- name: Update package cache (if enabled)
+  ansible.builtin.package:
+    update_cache: true
+  when: package_manager_update_cache | bool
+  changed_when: false
+  tags:
+    - package_manager
+    - cache_update
+
+- name: Manage packages - {{ package_manager_state }}
+  ansible.builtin.package:
+    name: "{{ package_manager_names }}"
+    state: "{{ package_manager_state }}"
+  register: package_manager_result
+  tags:
+    - package_manager
+    - package_installation
+
+- name: Display package management result  # noqa: no-handler
+  ansible.builtin.debug:
+    msg: >-
+      Packages {{ package_manager_names | join(', ') }} are {{ package_manager_state }} successfully.
+      Changed: {{ package_manager_result.changed }}
+  when: package_manager_result.changed
+  tags:
+    - package_manager
+    - debug
+
+- name: Remove obsolete packages (autoremove)
+  ansible.builtin.apt:
+    autoremove: true
+  when:
+    - package_manager_autoremove_enabled | bool
+    - ansible_os_family == 'Debian'
+  tags:
+    - package_manager
+    - autoremove
+
+- name: Warning for autoremove on non-Debian systems
+  ansible.builtin.debug:
+    msg: "Autoremove is only supported on Debian family systems"
+  when:
+    - package_manager_autoremove_enabled | bool
+    - ansible_os_family != 'Debian'
+  tags:
+    - package_manager
+    - autoremove
