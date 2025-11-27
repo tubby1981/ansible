@@ -18,6 +18,25 @@
         Require all granted
     </Directory>
 
+{# ============================  
+   URL / DIRECTORY PROTECTION  
+   ============================ #}
+
+{% set protections = item.url_protection | default(apache_security_restrictions | default([])) %}
+
+{% for rule in protections %}
+    <Location "{{ rule.path }}">
+{% if rule.allowed_ips | length == 1 and rule.allowed_ips[0] == "all" %}
+        Require all granted
+{% else %}
+        Require all denied
+{% for ip in rule.allowed_ips %}
+        Require ip {{ ip }}
+{% endfor %}
+{% endif %}
+    </Location>
+{% endfor %}
+
     # SSL Configuration - Let's Encrypt certificates
     SSLEngine on
     SSLCertificateFile /etc/letsencrypt/live/{{ item.item.server_name }}/fullchain.pem

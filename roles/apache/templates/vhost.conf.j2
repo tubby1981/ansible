@@ -25,6 +25,25 @@
         Require all granted
     </Directory>
 
+{# ============================  
+   URL / DIRECTORY PROTECTION  
+   ============================ #}
+
+{% set protections = item.url_protection | default(apache_security_restrictions | default([])) %}
+
+{% for rule in protections %}
+    <Location "{{ rule.path }}">
+{% if rule.allowed_ips | length == 1 and rule.allowed_ips[0] == "all" %}
+        Require all granted
+{% else %}
+        Require all denied
+{% for ip in rule.allowed_ips %}
+        Require ip {{ ip }}
+{% endfor %}
+{% endif %}
+    </Location>
+{% endfor %}
+
     ErrorLog ${APACHE_LOG_DIR}/{{ item.server_name }}_error.log
     CustomLog ${APACHE_LOG_DIR}/{{ item.server_name }}_access.log combined
 
@@ -46,7 +65,6 @@
 {% endfor %}
 {% endif %}
 </VirtualHost>
-
 
 {# ============================================================
    OPTIONAL HTTPS VHOST (ONLY when NOT using Let's Encrypt)
@@ -70,6 +88,25 @@
         AllowOverride All
         Require all granted
     </Directory>
+
+{# ============================  
+   URL / DIRECTORY PROTECTION  
+   ============================ #}
+
+{% set protections = item.url_protection | default(apache_security_restrictions | default([])) %}
+
+{% for rule in protections %}
+    <Location "{{ rule.path }}">
+{% if rule.allowed_ips | length == 1 and rule.allowed_ips[0] == "all" %}
+        Require all granted
+{% else %}
+        Require all denied
+{% for ip in rule.allowed_ips %}
+        Require ip {{ ip }}
+{% endfor %}
+{% endif %}
+    </Location>
+{% endfor %}
 
     SSLEngine on
 
