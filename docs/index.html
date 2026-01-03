@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tubby1981 System - Ansible Collection (Firewall, Webserver, Database, Mail Server)</title>
-    <meta name="description" content="Ansible collection for comprehensive Linux system management, featuring the Foomuuri multizone nftables firewall, Apache webserver with Let's Encrypt, MariaDB database configuration, full PHP support (7.4 to 8.4), phpMyAdmin, and production-ready mail server with Postfix, Dovecot, and spam/virus protection.">
-    <meta name="keywords" content="ansible, foomuuri, nftables, firewall, linux, debian, ubuntu, archlinux, nat, security, infrastructure as code, apache, webserver, certbot, letsencrypt, mariadb, mysql, database, replication, php, phpmyadmin, mail server, postfix, dovecot, postfixadmin, spamassassin, clamav, opendkim, email server, smtp, imap">
+    <title>Tubby1981 System - Ansible Collection (Firewall, Webserver, Database, Mail Server, Hetzner Cloud)</title>
+    <meta name="description" content="Ansible collection for comprehensive Linux system management, featuring the Foomuuri multizone nftables firewall, Apache webserver with Let's Encrypt, MariaDB database configuration, Hetzner Cloud network automation with PowerDNS Recursor, full PHP support (7.4 to 8.4), phpMyAdmin, and production-ready mail server with Postfix, Dovecot, and spam/virus protection.">
+    <meta name="keywords" content="ansible, foomuuri, nftables, firewall, linux, debian, ubuntu, archlinux, nat, security, infrastructure as code, apache, webserver, certbot, letsencrypt, mariadb, mysql, database, replication, php, phpmyadmin, hetzner cloud, cloud-init, powerdns, recursive dns, dnssec, network automation, mail server, postfix, dovecot, postfixadmin, spamassassin, clamav, opendkim, email server, smtp, imap">
     <link rel="canonical" href="https://tubby1981.github.io/ansible/">
     <style>
         body { 
@@ -81,7 +81,7 @@
 </head>
 <body>
     <h1>Tubby1981 System Ansible Collection</h1>
-    <p>A comprehensive Ansible collection for Linux system management, featuring roles for <strong>Foomuuri multizone firewall</strong>, <strong>Apache webserver</strong>, <strong>MariaDB database server</strong>, <strong>production-ready mail server</strong>, and full support for <strong>PHP</strong> and <strong>phpMyAdmin</strong> configuration.</p>
+    <p>A comprehensive Ansible collection for Linux system management, featuring roles for <strong>Foomuuri multizone firewall</strong>, <strong>Apache webserver</strong>, <strong>MariaDB database server</strong>, <strong>Hetzner Cloud network automation</strong>, <strong>production-ready mail server</strong>, and full support for <strong>PHP</strong> and <strong>phpMyAdmin</strong> configuration.</p>
     
     <h2>Quick Install</h2>
     <pre><code>ansible-galaxy collection install tubby1981.system</code></pre>
@@ -116,6 +116,17 @@
                 <li>User and database management</li>
                 <li>Master/Slave replication configuration</li>
                 <li>Performance tuning (InnoDB, buffers)</li>
+            </ul>
+        </div>
+        
+        <div class="feature-card">
+            <h3>☁️ Hetzner Network Override</h3>
+            <ul>
+                <li>Static network configuration on Hetzner Cloud</li>
+                <li>PowerDNS Recursor for recursive DNS</li>
+                <li>DNSSEC validation support</li>
+                <li>Spamhaus compliant (essential for mail servers)</li>
+                <li>Disables cloud-init network management</li>
             </ul>
         </div>
         
@@ -159,6 +170,18 @@
         <li>🔒 <strong>Security-first:</strong> Hardened by default</li>
         <li>📖 <strong>Well-documented:</strong> Comprehensive guides and examples</li>
         <li>🎯 <strong>Declarative:</strong> Infrastructure as Code approach</li>
+        <li>☁️ <strong>Cloud-optimized:</strong> Special support for Hetzner Cloud</li>
+    </ul>
+    
+    <h2>Why Hetzner Network Override?</h2>
+    <p>The <code>hetzner_network_override</code> role is essential for mail servers and other services on Hetzner Cloud that require true recursive DNS resolution. It configures <strong>PowerDNS Recursor</strong> which queries authoritative nameservers directly (starting from root servers), rather than forwarding to public DNS resolvers.</p>
+    <p><strong>Benefits:</strong></p>
+    <ul>
+        <li>✅ <strong>Spamhaus compliant:</strong> Prevents spam filter issues that occur when using DNS forwarders</li>
+        <li>✅ <strong>Better email deliverability:</strong> Improves mail server reputation</li>
+        <li>✅ <strong>DNSSEC validation:</strong> Built-in security validation</li>
+        <li>✅ <strong>Reliable networking:</strong> Static configuration prevents cloud-init interference</li>
+        <li>✅ <strong>No external dependencies:</strong> Works during DNS resolver outages</li>
     </ul>
     
     <h2>Requirements</h2>
@@ -167,6 +190,7 @@
         <li><strong>Python:</strong> >= 3.6</li>
         <li><strong>Target Systems:</strong> Debian 10+, Ubuntu 20.04+, Arch Linux (varies by role)</li>
         <li><strong>Privileges:</strong> Root or sudo access required</li>
+        <li><strong>Hetzner Cloud:</strong> Auto-detected by hetzner_network_override role</li>
     </ul>
     
     <h2>Links</h2>
@@ -176,16 +200,17 @@
     
     <h2>Quick Example</h2>
     <pre><code>---
-- name: Deploy complete system
+- name: Deploy complete system on Hetzner Cloud
   hosts: servers
   roles:
+    - tubby1981.system.hetzner_network_override
     - tubby1981.system.foomuuri
     - tubby1981.system.mariadb
     - tubby1981.system.apache
     - tubby1981.system.mailserver</code></pre>
     
     <hr>
-    <p><small><strong>Keywords:</strong> ansible collection, nftables firewall, foomuuri ansible, multizone firewall, linux firewall automation, debian ansible role, ubuntu firewall configuration, archlinux security, infrastructure as code, nat configuration, system hardening, devops automation, network security, apache, webserver, certbot, letsencrypt, mariadb, mysql, database, replication, sql, php, phpmyadmin, php 7.4, php 8.4, mail server, postfix, dovecot, postfixadmin, spamassassin, clamav, opendkim, email server, smtp, imap, virtual mailboxes</small></p>
+    <p><small><strong>Keywords:</strong> ansible collection, nftables firewall, foomuuri ansible, multizone firewall, linux firewall automation, debian ansible role, ubuntu firewall configuration, archlinux security, infrastructure as code, nat configuration, system hardening, devops automation, network security, apache, webserver, certbot, letsencrypt, mariadb, mysql, database, replication, sql, php, phpmyadmin, php 7.4, php 8.4, hetzner cloud, cloud-init override, powerdns recursor, recursive dns, dnssec, network automation, static networking, mail server, postfix, dovecot, postfixadmin, spamassassin, clamav, opendkim, email server, smtp, imap, virtual mailboxes, spam filtering</small></p>
     
     <p><small>&copy; 2024 Tubby1981 | Licensed under <a href="https://github.com/tubby1981/ansible/blob/main/LICENSE">MIT License</a></small></p>
 </body>

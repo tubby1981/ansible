@@ -1,0 +1,44 @@
+# roles/hetzner_network_override/tasks/backup.yml
+
+- name: Create backup directory
+  ansible.builtin.file:
+    path: "/root/network_config_backup_{{ ansible_date_time.epoch }}"
+    state: directory
+    mode: '0700'
+  register: hetzner_network_override_backup_dir
+
+- name: Backup cloud-init network configuration
+  ansible.builtin.copy:
+    src: /etc/network/interfaces.d/50-cloud-init
+    dest: "{{ hetzner_network_override_backup_dir.path }}/50-cloud-init.backup"
+    remote_src: true
+    mode: '0600'
+  failed_when: false  # More explicit than ignore_errors
+
+- name: Backup resolv.conf
+  ansible.builtin.copy:
+    src: /etc/resolv.conf
+    dest: "{{ hetzner_network_override_backup_dir.path }}/resolv.conf.backup"
+    remote_src: true
+    mode: '0600'
+  failed_when: false
+
+- name: Backup cloud-init configuration
+  ansible.builtin.copy:
+    src: /etc/cloud/cloud.cfg
+    dest: "{{ hetzner_network_override_backup_dir.path }}/cloud.cfg.backup"
+    remote_src: true
+    mode: '0600'
+  failed_when: false
+
+- name: Backup PowerDNS Recursor configuration (if exists)
+  ansible.builtin.copy:
+    src: /etc/powerdns/recursor.conf
+    dest: "{{ hetzner_network_override_backup_dir.path }}/recursor.conf.backup"
+    remote_src: true
+    mode: '0600'
+  failed_when: false
+
+- name: Display backup location
+  ansible.builtin.debug:
+    msg: "Configuration backed up to: {{ hetzner_network_override_backup_dir.path }}"

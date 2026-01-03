@@ -1,0 +1,23 @@
+# roles/hetzner_network_override/tasks/main.yml
+
+- name: Include detection tasks
+  ansible.builtin.include_tasks: detect.yml
+  when: hetzner_network_override_auto_detect | bool
+
+- name: Include validation tasks
+  ansible.builtin.include_tasks: validate.yml
+
+- name: Include backup tasks
+  ansible.builtin.include_tasks: backup.yml
+  when: hetzner_network_override_backup_configs | bool
+
+- name: Include cloud-init tasks
+  ansible.builtin.include_tasks: cloud_init.yml
+  when: hetzner_network_override_disable_cloud_init_network | bool
+
+- name: Include network configuration tasks
+  ansible.builtin.include_tasks: network.yml
+
+- name: Include DNS configuration tasks
+  ansible.builtin.include_tasks: dns.yml
+  when: hetzner_network_override_use_local_dns | bool

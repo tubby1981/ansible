@@ -1,0 +1,22 @@
+# roles/hetzner_network_override/templates/dnsmasq.conf.j2
+# Managed by Ansible - hetzner_network_override role
+# dnsmasq configuration for local DNS caching
+
+# Listen only on localhost
+listen-address=127.0.0.1
+bind-interfaces
+
+# Don't read /etc/resolv.conf or /etc/hosts
+no-resolv
+no-hosts
+
+# Upstream DNS servers
+{% for dns_server in hetzner_network_override_upstream_dns_servers %}
+server={{ dns_server }}
+{% endfor %}
+
+# Logging
+{% if hetzner_network_override_dnsmasq_log_queries %}
+log-queries
+log-facility=/var/log/dnsmasq.log
+{% endif %}

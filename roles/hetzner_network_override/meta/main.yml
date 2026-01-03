@@ -1,0 +1,24 @@
+# roles/hetzner_network_override/meta/main.yml
+galaxy_info:
+  role_name: hetzner_network_override
+  author: Your Name
+  description: Override cloud-init network configuration on Hetzner Cloud VMs and configure local DNS
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+  galaxy_tags:
+    - hetzner
+    - cloud
+    - network
+    - dns
+    - dnsmasq
+
+dependencies: []

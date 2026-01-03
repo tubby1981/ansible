@@ -1,0 +1,18 @@
+# roles/hetzner_network_override/tasks/cloud_init.yml
+
+- name: Disable cloud-init network configuration
+  ansible.builtin.copy:
+    dest: /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+    content: |
+      # Managed by Ansible - hetzner_network_override role
+      # This prevents cloud-init from managing network configuration
+      network: {config: disabled}
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Remove cloud-init network interface configuration
+  ansible.builtin.file:
+    path: /etc/network/interfaces.d/50-cloud-init
+    state: absent
+  when: not hetzner_network_override_keep_cloud_init_config | bool

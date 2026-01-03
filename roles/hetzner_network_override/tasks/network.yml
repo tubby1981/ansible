@@ -1,0 +1,17 @@
+# roles/hetzner_network_override/tasks/network.yml
+
+- name: Ensure network configuration directory exists
+  ansible.builtin.file:
+    path: /etc/network/interfaces.d
+    state: directory
+    mode: '0755'
+
+- name: Configure static network interface
+  ansible.builtin.template:
+    src: interfaces.j2
+    dest: /etc/network/interfaces.d/50-static-config
+    owner: root
+    group: root
+    mode: '0644'
+    validate: 'sh -c "cat %s"'  # Basic syntax check
+  notify: Restart networking

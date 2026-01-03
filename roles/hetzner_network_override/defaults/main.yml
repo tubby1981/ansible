@@ -1,0 +1,52 @@
+# roles/hetzner_network_override/defaults/main.yml
+
+# hetzner_network_override API configuration
+hetzner_network_override_api_token: ""  # Set via environment variable or vault
+hetzner_network_override_api_url: "https://api.hetzner_network_override.cloud/v1"
+
+# Auto-detection settings
+hetzner_network_override_auto_detect: true
+hetzner_network_override_force_detection: false  # Force re-detection even if vars are set
+
+# Network configuration (auto-populated if hetzner_network_override_auto_detect is true)
+hetzner_network_override_server_name: "{{ inventory_hostname }}"
+hetzner_network_override_ipv4_address: ""
+hetzner_network_override_ipv4_gateway: ""
+hetzner_network_override_ipv6_address: ""
+hetzner_network_override_ipv6_prefix: "64"
+hetzner_network_override_ipv6_gateway: "fe80::1"
+
+# Network interface
+hetzner_network_override_network_interface: "eth0"
+
+# DNS configuration
+hetzner_network_override_use_local_dns: true
+hetzner_network_override_install_pdns_recursor: true
+
+# PowerDNS Recursor configuration
+hetzner_network_override_pdns_local_address: "127.0.0.1"
+hetzner_network_override_pdns_local_port: "53"
+hetzner_network_override_pdns_threads: "2"
+hetzner_network_override_pdns_max_cache_entries: "1000000"
+hetzner_network_override_pdns_max_negative_ttl: "3600"
+hetzner_network_override_pdns_log_level: "4"  # 0=none, 9=all
+hetzner_network_override_pdns_log_common_errors: true
+hetzner_network_override_pdns_dnssec: "process"  # process, log-fail, off
+hetzner_network_override_pdns_forward_zones: []
+  # Example for YAML format:
+  # - zone: "example.local"
+  #   forwarders: "10.0.0.1;10.0.0.2"
+  # - zone: "internal.corp"
+  #   forwarders: "192.168.1.1"
+
+# resolv.conf configuration
+hetzner_network_override_resolv_conf_options: "edns0 trust-ad"  # DNSSEC support
+hetzner_network_override_make_resolv_immutable: true  # Prevent DHCP from overwriting
+
+# Cloud-init configuration
+hetzner_network_override_disable_cloud_init_network: true
+hetzner_network_override_keep_cloud_init_config: false  # Keep backup of original config
+
+# Safety settings
+hetzner_network_override_require_confirmation: false
+hetzner_network_override_backup_configs: true

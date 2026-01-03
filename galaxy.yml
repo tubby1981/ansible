@@ -1,7 +1,7 @@
 ---
 namespace: tubby1981
 name: system
-version: 1.0.4
+version: 1.0.5
 readme: README.md
 authors:
   - Tubby1981 <tubby1981@users.noreply.github.com>
@@ -10,45 +10,32 @@ description: >-
   a modern multizone bidirectional nftables firewall with advanced NAT,
   dynamic IP lists, and comprehensive security features. Includes roles
   for Apache2 webserver with Let's Encrypt SSL, MariaDB database server,
-  PHP and phpMyAdmin support, and a production-ready mail server with
-  Postfix, Dovecot, PostfixAdmin, SpamAssassin, ClamAV, and OpenDKIM.
+  PHP and phpMyAdmin support, Hetzner Cloud network automation with 
+  PowerDNS Recursor for recursive DNS resolution, and a production-ready 
+  mail server with Postfix, Dovecot, PostfixAdmin, SpamAssassin, ClamAV, 
+  and OpenDKIM.
 license: MIT
 tags:
   - firewall
   - nftables
-  - foomuuri
   - security
   - linux
   - debian
-  - ubuntu
-  - archlinux
-  - system
   - networking
-  - nat
   - infrastructure
-  - hardening
-  - multizone
-  - apache
   - apache2
-  - webserver
   - letsencrypt
-  - ssl
   - mariadb
-  - mysql
-  - database
-  - php
-  - phpmyadmin
+  - hetzner
+  - cloud
+  - dns
   - mail
-  - email
   - postfix
   - dovecot
-  - smtp
-  - imap
-  - postfixadmin
   - spamassassin
-  - clamav
-  - antispam
-  - antivirus
+  - monitoring
+  - automation
+  - devops
 dependencies: {}
 repository: https://github.com/tubby1981/ansible
 documentation: https://github.com/tubby1981/ansible/blob/main/README.md

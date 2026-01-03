@@ -1,0 +1,99 @@
+# roles/hetzner_network_override/tasks/detect.yml
+
+- name: Check if running on Hetzner Cloud
+  ansible.builtin.uri:
+    url: http://169.254.169.254/hetzner/v1/metadata
+    method: GET
+    status_code: [200, 404]
+    timeout: 5
+  register: hetzner_network_override_metadata_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Set Hetzner detection fact
+  ansible.builtin.set_fact:
+    hetzner_network_override_is_cloud: "{{ hetzner_network_override_metadata_check.status == 200 }}"
+
+- name: Fail if not on Hetzner Cloud
+  ansible.builtin.fail:
+    msg: "This role is designed for Hetzner Cloud VMs. Use hetzner_network_override_force_detection=true to override."
+  when:
+    - not hetzner_network_override_is_cloud
+    - not hetzner_network_override_force_detection | bool
+
+- name: Get metadata from Hetzner metadata service
+  ansible.builtin.uri:
+    url: http://169.254.169.254/hetzner/v1/metadata
+    method: GET
+    return_content: true
+  register: hetzner_network_override_metadata
+  when: hetzner_network_override_is_cloud
+  changed_when: false
+
+- name: Parse metadata and set network facts
+  ansible.builtin.set_fact:
+    hetzner_network_override_server_id: "{{ hetzner_network_override_metadata.json['instance-id'] | default('') }}"
+    hetzner_network_override_detected_hostname: "{{ hetzner_network_override_metadata.json.hostname | default('') }}"
+  when:
+    - hetzner_network_override_is_cloud
+    - hetzner_network_override_metadata.json is defined
+
+- name: Get current network configuration from Ansible facts
+  ansible.builtin.set_fact:
+    hetzner_network_override_ipv4_address: "{{ ansible_default_ipv4.address }}"
+    hetzner_network_override_ipv4_gateway: "{{ ansible_default_ipv4.gateway }}"
+  when:
+    - hetzner_network_override_ipv4_address == "" or hetzner_network_override_force_detection | bool
+    - ansible_default_ipv4 is defined
+    - ansible_default_ipv4.address is defined
+
+- name: Get IPv6 configuration from Ansible facts
+  ansible.builtin.set_fact:
+    hetzner_network_override_ipv6_address: "{{ ansible_default_ipv6.address }}"
+    hetzner_network_override_ipv6_prefix: "{{ ansible_default_ipv6.prefix }}"
+  when:
+    - hetzner_network_override_ipv6_address == "" or hetzner_network_override_force_detection | bool
+    - ansible_default_ipv6 is defined
+    - ansible_default_ipv6.address is defined
+
+- name: Fetch additional info from Hetzner API (if token provided)
+  when:
+    - hetzner_network_override_api_token is defined
+    - hetzner_network_override_api_token != ""
+  block:
+    - name: Get server info from Hetzner API
+      ansible.builtin.uri:
+        url: "{{ hetzner_network_override_api_url }}/servers?name={{ hetzner_network_override_server_name }}"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ hetzner_network_override_api_token }}"
+        return_content: true
+      register: hetzner_network_override_api_response
+      delegate_to: localhost
+      become: false
+      changed_when: false
+
+    - name: Extract server details from API
+      ansible.builtin.set_fact:
+        hetzner_network_override_server_details: "{{ hetzner_network_override_api_response.json.servers[0] }}"
+      when:
+        - hetzner_network_override_api_response.json.servers is defined
+        - hetzner_network_override_api_response.json.servers | length > 0
+
+    - name: Set network facts from API
+      ansible.builtin.set_fact:
+        hetzner_network_override_ipv4_address: "{{ hetzner_network_override_server_details.public_net.ipv4.ip }}"
+        hetzner_network_override_ipv6_address: "{{ hetzner_network_override_server_details.public_net.ipv6.ip.split('/')[0] }}"
+        hetzner_network_override_ipv6_prefix: "{{ hetzner_network_override_server_details.public_net.ipv6.ip.split('/')[1] }}"
+      when:
+        - hetzner_network_override_server_details is defined
+        - hetzner_network_override_force_detection | bool or hetzner_network_override_ipv4_address == ""
+
+- name: Display detected configuration
+  ansible.builtin.debug:
+    msg:
+      - "Detected Hetzner Cloud VM"
+      - "IPv4: {{ hetzner_network_override_ipv4_address }}"
+      - "IPv4 Gateway: {{ hetzner_network_override_ipv4_gateway }}"
+      - "IPv6: {{ hetzner_network_override_ipv6_address }}/{{ hetzner_network_override_ipv6_prefix }}"
+      - "IPv6 Gateway: {{ hetzner_network_override_ipv6_gateway }}"

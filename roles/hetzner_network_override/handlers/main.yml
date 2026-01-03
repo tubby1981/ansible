@@ -1,0 +1,24 @@
+# roles/hetzner_network_override/handlers/main.yml
+
+- name: Restart networking
+  ansible.builtin.systemd:
+    name: networking
+    state: restarted
+  async: 1
+  poll: 0
+  failed_when: false
+  listen: restart networking
+
+- name: Wait for connection after network restart
+  ansible.builtin.wait_for_connection:
+    connect_timeout: 5
+    sleep: 5
+    delay: 5
+    timeout: 60
+  listen: restart networking
+
+- name: Restart pdns-recursor
+  ansible.builtin.systemd:
+    name: pdns-recursor
+    state: restarted
+    enabled: true
