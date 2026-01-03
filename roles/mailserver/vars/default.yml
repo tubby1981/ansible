@@ -1,0 +1,29 @@
+---
+# Default OS variables (fallback)
+
+# Time synchronization
+mailserver_time_sync_service: "systemd-timesyncd"
+
+# Essential packages (minimal set)
+mailserver_debian_essential_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - python3-pip
+  - git
+  - vim
+  - net-tools
+  - dnsutils
+  - mailutils
+  - systemd-timesyncd
+
+# Apache service name
+mailserver_apache_service_name: "apache2"
+
+# PHP version
+mailserver_php_version_check: true
+
+# Postfix version settings
+mailserver_postfix_compatibility_level: "2"
+mailserver_postfix_require_postlog: false

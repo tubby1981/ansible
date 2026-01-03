@@ -142,6 +142,7 @@
     owner: www-data
     group: www-data
     mode: '0755'
+    recurse: true
   loop: "{{ apache_vhosts }}"
   when: apache_enabled and (item.enabled | default(true))
   tags: [apache, vhosts]

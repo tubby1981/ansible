@@ -1,0 +1,72 @@
+---
+# Service handlers for mail server
+
+- name: Restart postfix
+  ansible.builtin.systemd:
+    name: postfix
+    state: restarted
+
+- name: Reload postfix
+  ansible.builtin.systemd:
+    name: postfix
+    state: reloaded
+
+- name: Postmap sasl_passwd
+  ansible.builtin.command: postmap /etc/postfix/sasl_passwd
+  # We use changed_when: true because if this handler is notified,
+  # the file has changed and the map must be updated.
+  changed_when: true
+
+- name: Restart dovecot
+  ansible.builtin.systemd:
+    name: dovecot
+    state: restarted
+
+- name: Reload dovecot
+  ansible.builtin.systemd:
+    name: dovecot
+    state: reloaded
+
+- name: Restart opendkim
+  ansible.builtin.systemd:
+    name: opendkim
+    state: restarted
+
+- name: Restart apache2
+  ansible.builtin.systemd:
+    name: apache2
+    state: restarted
+
+- name: Reload apache2
+  ansible.builtin.systemd:
+    name: apache2
+    state: reloaded
+
+- name: Restart mariadb
+  ansible.builtin.systemd:
+    name: mariadb
+    state: restarted
+
+- name: Restart spamd
+  ansible.builtin.systemd:
+    name: spamd
+    state: restarted
+
+- name: Restart clamav-daemon
+  ansible.builtin.systemd:
+    name: clamav-daemon
+    state: restarted
+
+- name: Restart clamav-milter
+  ansible.builtin.systemd:
+    name: clamav-milter
+    state: restarted
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart dnsmasq
+  ansible.builtin.service:
+    name: dnsmasq
+    state: restarted

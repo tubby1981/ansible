@@ -1,0 +1,19 @@
+##
+# LMTP specific settings
+##
+
+protocol lmtp {
+
+  # IMPORTANT:
+  # Do NOT strip the domain part from the username.
+  # Required for virtual users (PostfixAdmin / SQL userdb)
+  # Dovecot 2.4 otherwise returns: 550 User doesn't exist
+  auth_username_format = %{user | lower}
+
+  # Enable Sieve if needed
+  #{
+  #mail_plugins {
+  #  sieve = yes
+  # }
+  #}
+}

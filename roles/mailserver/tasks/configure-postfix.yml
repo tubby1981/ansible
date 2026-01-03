@@ -1,0 +1,145 @@
+---
+# Postfix MTA configuration tasks
+
+- name: Install Postfix packages
+  ansible.builtin.include_role:
+    name: package_manager
+  vars:
+    package_manager_names:
+      - postfix
+      - postfix-mysql
+      - postfix-policyd-spf-python
+      - libsasl2-modules
+      - sasl2-bin
+    package_manager_state: present
+  tags: [postfix, mta]
+
+- name: Configure Postfix main.cf
+  ansible.builtin.template:
+    src: postfix/main.cf.j2
+    dest: /etc/postfix/main.cf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart postfix
+  tags: [postfix, mta]
+
+- name: Configure Postfix master.cf
+  ansible.builtin.template:
+    src: postfix/master.cf.j2
+    dest: /etc/postfix/master.cf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart postfix
+  tags: [postfix, mta]
+
+- name: Create Postfix MySQL configuration directory
+  ansible.builtin.file:
+    path: /etc/postfix/mysql
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags: [postfix, mta]
+
+- name: Configure MySQL virtual mailbox domains
+  ansible.builtin.template:
+    src: postfix/mysql-virtual-mailbox-domains.cf.j2
+    dest: /etc/postfix/mysql/mysql-virtual-mailbox-domains.cf
+    owner: root
+    group: postfix
+    mode: '0640'
+  notify: Restart postfix
+  tags: [postfix, mta]
+
+- name: Configure MySQL virtual mailbox maps
+  ansible.builtin.template:
+    src: postfix/mysql-virtual-mailbox-maps.cf.j2
+    dest: /etc/postfix/mysql/mysql-virtual-mailbox-maps.cf
+    owner: root
+    group: postfix
+    mode: '0640'
+  when: mailserver_server_mode in ['mailboxes', 'both']
+  notify: Restart postfix
+  tags: [postfix, mta]
+
+- name: Configure MySQL virtual alias maps
+  ansible.builtin.template:
+    src: postfix/mysql-virtual-alias-maps.cf.j2
+    dest: /etc/postfix/mysql/mysql-virtual-alias-maps.cf
+    owner: root
+    group: postfix
+    mode: '0640'
+  notify: Restart postfix
+  tags: [postfix, mta]
+
+- name: Configure MySQL virtual alias domain maps
+  ansible.builtin.template:
+    src: postfix/mysql-virtual-alias-domain-maps.cf.j2
+    dest: /etc/postfix/mysql/mysql-virtual-alias-domain-maps.cf
+    owner: root
+    group: postfix
+    mode: '0640'
+  when: mailserver_server_mode in ['forwarding', 'both']
+  notify: Restart postfix
+  tags: [postfix, mta]
+
+- name: Create SASL configuration directory
+  ansible.builtin.file:
+    path: /etc/postfix/sasl
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags: [postfix, mta]
+
+- name: Configure SASL authentication
+  ansible.builtin.copy:
+    dest: /etc/postfix/sasl/smtpd.conf
+    content: |
+      pwcheck_method: saslauthd
+      mech_list: PLAIN LOGIN
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart postfix
+  tags: [postfix, mta]
+
+- name: Configure Postfix SASL relay credentials
+  ansible.builtin.copy:
+    dest: /etc/postfix/sasl_passwd
+    owner: root
+    group: root
+    mode: '0600'
+    content: |
+      [{{ mailserver_postfix_relay_host }}]:{{ mailserver_postfix_relay_port }} {{ mailserver_postfix_relay_username }}:{{ mailserver_postfix_relay_password }}
+    force: true
+  when: mailserver_postfix_use_relay
+  notify:
+    - postmap sasl_passwd
+    - Restart postfix
+  tags: [postfix, mta]
+
+- name: Add postfix user to sasl group
+  ansible.builtin.user:
+    name: postfix
+    groups: sasl
+    append: true
+  tags: [postfix, mta]
+
+- name: Ensure MariaDB and ClamAV milter are running
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+  loop:
+    - mariadb
+    - clamav-milter
+  tags: [postfix, mta]
+
+- name: Start and enable Postfix
+  ansible.builtin.systemd:
+    name: postfix
+    state: started
+    enabled: true
+  tags: [postfix, mta]

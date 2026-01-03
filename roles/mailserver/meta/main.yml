@@ -1,0 +1,37 @@
+---
+galaxy_info:
+  role_name: mailserver
+  author: Tubby1981
+  description: Production-ready mail server with Postfix, Dovecot, PostfixAdmin, ClamAV, SpamAssassin, and OpenDKIM
+  license: MIT
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+        - trixie  # testing/unstable
+  galaxy_tags:
+    - mail
+    - email
+    - postfix
+    - dovecot
+    - smtp
+    - imap
+    - postfixadmin
+    - spamassassin
+    - clamav
+    - opendkim
+    - antispam
+    - antivirus
+    - security
+
+# Uncomment dependencies if these roles are required for mailserver to function
+# dependencies:
+#   - role: tubby1981.system.mariadb
+#   - role: tubby1981.system.apache
+#   - role: tubby1981.system.foomuuri

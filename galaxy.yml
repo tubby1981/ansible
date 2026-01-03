@@ -1,20 +1,18 @@
 ---
 namespace: tubby1981
 name: system
-version: 1.0.3
+version: 1.0.4
 readme: README.md
 authors:
   - Tubby1981 <tubby1981@users.noreply.github.com>
-
 description: >-
   Ansible collection for Linux system management featuring Foomuuri -
   a modern multizone bidirectional nftables firewall with advanced NAT,
-  dynamic IP lists, and comprehensive security features. **Now also includes
-  comprehensive roles for managing the Apache2 webserver, the MariaDB
-  database server, and support for PHP and phpMyAdmin.**
-
+  dynamic IP lists, and comprehensive security features. Includes roles
+  for Apache2 webserver with Let's Encrypt SSL, MariaDB database server,
+  PHP and phpMyAdmin support, and a production-ready mail server with
+  Postfix, Dovecot, PostfixAdmin, SpamAssassin, ClamAV, and OpenDKIM.
 license: MIT
-
 tags:
   - firewall
   - nftables
@@ -33,17 +31,29 @@ tags:
   - apache
   - apache2
   - webserver
+  - letsencrypt
+  - ssl
   - mariadb
+  - mysql
+  - database
   - php
   - phpmyadmin
-
+  - mail
+  - email
+  - postfix
+  - dovecot
+  - smtp
+  - imap
+  - postfixadmin
+  - spamassassin
+  - clamav
+  - antispam
+  - antivirus
 dependencies: {}
-
 repository: https://github.com/tubby1981/ansible
 documentation: https://github.com/tubby1981/ansible/blob/main/README.md
-homepage: https://github.com/tubby1981/ansible
+homepage: https://tubby1981.github.io/ansible/
 issues: https://github.com/tubby1981/ansible/issues
-
 build_ignore:
   - .gitignore
   - .git

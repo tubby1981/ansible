@@ -1,0 +1,31 @@
+---
+# Debian-specific variables
+
+# Time synchronization (Debian uses systemd-timesyncd instead of ntp)
+mailserver_time_sync_service: "systemd-timesyncd"
+
+# Package names specific to Debian
+mailserver_debian_essential_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - python3-pip
+  - git
+  - vim
+  - net-tools
+  - dnsutils
+  - mailutils
+  - systemd-timesyncd
+
+# Apache service name
+mailserver_apache_service_name: "apache2"
+
+# PHP version detection (Debian 13 uses PHP 8.2+)
+mailserver_php_version_check: true
+
+# Postfix version settings (older Debian versions)
+mailserver_postfix_compatibility_level: "2"
+mailserver_postfix_require_postlog: false
+
+mailserver_dovecot_config_base_version: "2.3"

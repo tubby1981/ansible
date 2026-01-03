@@ -1,0 +1,82 @@
+---
+- name: Download PostfixAdmin release
+  ansible.builtin.get_url:
+    url: "https://github.com/postfixadmin/postfixadmin/archive/postfixadmin-{{ mailserver_postfixadmin_version }}.tar.gz"
+    dest: "/tmp/postfixadmin-{{ mailserver_postfixadmin_version }}.tar.gz"
+    mode: '0644'
+  tags: [postfixadmin]
+
+- name: Create PostfixAdmin directory
+  ansible.builtin.file:
+    path: "{{ mailserver_postfixadmin_install_dir }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  tags: [postfixadmin]
+
+- name: Extract PostfixAdmin
+  ansible.builtin.unarchive:
+    src: "/tmp/postfixadmin-{{ mailserver_postfixadmin_version }}.tar.gz"
+    dest: "{{ mailserver_postfixadmin_install_dir }}"
+    remote_src: true
+    extra_opts: [--strip-components=1]
+    owner: www-data
+    group: www-data
+  tags: [postfixadmin]
+
+- name: Create PostfixAdmin templates_c directory
+  ansible.builtin.file:
+    path: "{{ mailserver_postfixadmin_install_dir }}/templates_c"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  tags: [postfixadmin]
+
+- name: Create PostfixAdmin Apache configuration directory
+  ansible.builtin.file:
+    path: /etc/apache2/conf-available
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags: [postfixadmin]
+
+- name: Configure PostfixAdmin Apache alias
+  ansible.builtin.copy:
+    dest: /etc/apache2/conf-available/postfixadmin.conf
+    content: |
+      Alias /{{ mailserver_postfixadmin_url_path }} {{ mailserver_postfixadmin_install_dir }}/public
+
+      <Directory {{ mailserver_postfixadmin_install_dir }}/public>
+          Options +FollowSymLinks
+          AllowOverride All
+          Require all granted
+      </Directory>
+    owner: root
+    group: root
+    mode: '0644'
+  tags: [postfixadmin]
+
+- name: Enable PostfixAdmin Apache configuration
+  ansible.builtin.command: a2enconf postfixadmin
+  args:
+    creates: /etc/apache2/conf-enabled/postfixadmin.conf
+  notify: Restart apache2
+  tags: [postfixadmin]
+
+- name: Ensure Apache is Restarted to load PostfixAdmin
+  ansible.builtin.meta: flush_handlers
+  tags: [postfixadmin]
+
+- name: Wait for Apache to be ready
+  ansible.builtin.wait_for:
+    port: 80
+    delay: 5
+    timeout: 30
+  tags: [postfixadmin]
+
+- name: Setup PostfixAdmin Database
+  ansible.builtin.include_tasks: configure-postfixadmin-database.yml
+  tags: [postfixadmin, mailserver_postfixadmin_db]

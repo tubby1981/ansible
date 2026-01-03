@@ -1,0 +1,96 @@
+---
+# ClamAV antivirus installation and configuration
+
+- name: Install ClamAV packages via package_manager
+  ansible.builtin.include_role:
+    name: package_manager
+  vars:
+    package_manager_names: "{{ mailserver_clamav_packages | default(['clamav', 'clamav-daemon', 'clamav-freshclam']) }}"
+    package_manager_state: present
+  tags: [clamav, antivirus]
+
+- name: Configure ClamAV daemon
+  ansible.builtin.template:
+    src: clamav/clamd.conf.j2
+    dest: /etc/clamav/clamd.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart clamav-daemon
+  tags: [clamav, antivirus]
+
+- name: Configure Freshclam
+  ansible.builtin.template:
+    src: clamav/freshclam.conf.j2
+    dest: /etc/clamav/freshclam.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart clamav-freshclam
+  tags: [clamav, antivirus]
+
+- name: Check if ClamAV database exists
+  ansible.builtin.stat:
+    path: /var/lib/clamav/main.cvd
+  register: mailserver_clamav_db
+  tags: [clamav, antivirus]
+
+- name: Initial ClamAV virus database update
+  ansible.builtin.command: freshclam
+  when: not mailserver_clamav_db.stat.exists
+  register: mailserver_freshclam_update
+  changed_when: true
+  failed_when: false
+  timeout: 600
+  tags: [clamav, antivirus]
+
+- name: Start and enable Freshclam
+  ansible.builtin.systemd:
+    name: clamav-freshclam
+    state: started
+    enabled: true
+  tags: [clamav, antivirus]
+
+- name: Start and enable ClamAV daemon
+  ansible.builtin.systemd:
+    name: clamav-daemon
+    state: started
+    enabled: true
+  tags: [clamav, antivirus]
+
+- name: Wait for ClamAV socket to be available
+  ansible.builtin.wait_for:
+    path: /var/run/clamav/clamd.ctl
+    timeout: 60
+  tags: [clamav, antivirus]
+
+- name: Install ClamAV milter for Postfix integration
+  ansible.builtin.apt:
+    name: clamav-milter
+    state: present
+  tags: [clamav, antivirus]
+
+- name: Configure ClamAV milter
+  ansible.builtin.template:
+    src: clamav/clamav-milter.conf.j2
+    dest: /etc/clamav/clamav-milter.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart clamav-milter
+  tags: [clamav, antivirus]
+
+- name: Ensure postfix is member of clamav group
+  ansible.builtin.user:
+    name: postfix
+    groups: clamav
+    append: true
+  notify: Restart postfix
+  tags: [clamav, antivirus]
+
+- name: Start and enable ClamAV milter
+  ansible.builtin.systemd:
+    name: clamav-milter
+    state: started
+    enabled: true
+  tags: [clamav, antivirus]

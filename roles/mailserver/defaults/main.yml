@@ -1,0 +1,86 @@
+---
+# ===================================
+# Mail Server Default Variables
+# ===================================
+
+# Domain and Hostname Configuration
+mailserver_domain: "handigerecepten.nl"
+mailserver_hostname: "mail.handigerecepten.nl"
+mailserver_server_admin: "admin@{{ mailserver_domain }}"
+
+# Mail Server Mode
+mailserver_server_mode: "both"
+
+# Database Configuration
+mailserver_db_name: "postfixadmin"
+mailserver_db_user: "postfixadmin"
+mailserver_db_password: "{{ vault_postfixadmin_db_password }}"
+
+# PostfixAdmin Configuration
+mailserver_postfixadmin_version: "3.3.13"
+mailserver_postfixadmin_install_dir: "/var/www/postfixadmin"
+mailserver_postfixadmin_url_path: "postfixadmin"
+mailserver_postfixadmin_setup_password: "{{ vault_mailserver_postfixadmin_setup_password }}"
+mailserver_postfixadmin_admin_email: "{{ mailserver_server_admin }}"
+mailserver_postfixadmin_admin_password: "{{ vault_mailserver_postfixadmin_admin_password }}"
+
+# Postfix RBL
+mailserver_postfix_rbl_clients:
+  - zen.spamhaus.org
+  - bl.mailspike.net
+
+# SSL/TLS
+mailserver_certbot_enabled: true
+mailserver_certbot_email: "{{ mailserver_server_admin }}"
+
+# DKIM
+mailserver_opendkim_selector: "mail"
+mailserver_opendkim_key_size: 2048
+
+# Mail Storage
+mailserver_storage_path: "/var/mail/vhosts"
+mailserver_uid: 5000
+mailserver_gid: 5000
+mailserver_default_folders:
+  - Drafts
+  - Junk
+  - Trash
+  - Sent
+
+# Dovecot
+mailserver_dovecot_protocols: "imap pop3 lmtp"
+mailserver_dovecot_mail_driver: maildir
+mailserver_dovecot_mail_path: ~/Maildir
+mailserver_dovecot_mail_home: /var/mail/vhosts/%{user|domain}/%{user|username}
+
+# phpMyAdmin
+mailserver_phpmyadmin_url_path: "phpmyadmin"
+mailserver_phpmyadmin_restrict_access: true
+
+# Anti-Spam (SpamAssassin)
+mailserver_spamassassin_enabled: true
+mailserver_spamassassin_required_score: 5.0
+mailserver_spamassassin_use_bayes: 1
+mailserver_spamassassin_bayes_auto_learn: 1
+
+# Anti-Virus (ClamAV)
+mailserver_clamav_enabled: true
+mailserver_clamav_max_scan_size: "100M"
+mailserver_clamav_max_file_size: "25M"
+
+# Postfix Message
+mailserver_postfix_message_size_limit: 52428800
+
+# System
+mailserver_timezone: "UTC"
+mailserver_locale: "en_US.UTF-8"
+
+# Additional Domains
+mailserver_additional_domains: []
+
+# Relay
+mailserver_postfix_use_relay: true
+mailserver_postfix_relay_host: "{{ vault_postfix_relay_host }}"
+mailserver_postfix_relay_port: 587
+mailserver_postfix_relay_username: "{{ vault_postfix_relay_username }}"
+mailserver_postfix_relay_password: "{{ vault_postfix_relay_password }}"

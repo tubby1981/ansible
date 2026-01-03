@@ -1,0 +1,137 @@
+---
+# Dovecot IMAP/POP3 server configuration tasks
+
+- name: Install Dovecot packages via package_manager
+  ansible.builtin.include_role:
+    name: package_manager
+  vars:
+    package_manager_names: "{{ mailserver_dovecot_packages | default(package_manager_dovecot_packages_default) }}"
+    package_manager_dovecot_packages_default:
+      - dovecot-core
+      - dovecot-imapd
+      - dovecot-pop3d
+      - dovecot-lmtpd
+      - dovecot-mysql
+      - dovecot-sieve
+      - dovecot-managesieved
+    package_manager_state: present
+  tags: [dovecot, imap, pop3]
+
+- name: Get dovecot version
+  ansible.builtin.command: dovecot --version
+  register: mailserver_dovecot_version
+  changed_when: false
+  tags: [dovecot, imap, pop3]
+
+- name: Determine dovecot SQL syntax
+  ansible.builtin.set_fact:
+    mailserver_dovecot_sql_v2: "{{ mailserver_dovecot_version.stdout is version('2.4', '>=') }}"
+  tags: [dovecot, imap, pop3]
+
+- name: Debug Dovecot version detection
+  ansible.builtin.debug:
+    msg:
+      - "Dovecot raw version: {{ mailserver_dovecot_version.stdout }}"
+      - "Using SQL v2 syntax (>=2.4): {{ mailserver_dovecot_sql_v2 }}"
+  tags: [dovecot, imap, pop3]
+
+- name: Configure Dovecot main configuration
+  ansible.builtin.template:
+    src: dovecot/dovecot.conf.j2
+    dest: /etc/dovecot/dovecot.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart dovecot
+  tags: [dovecot, imap, pop3]
+
+- name: Configure Dovecot authentication
+  ansible.builtin.template:
+    src: dovecot/10-auth.conf.j2
+    dest: /etc/dovecot/conf.d/10-auth.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart dovecot
+  tags: [dovecot, imap, pop3]
+
+- name: Configure Dovecot mail location
+  ansible.builtin.template:
+    src: dovecot/10-mail.conf.j2
+    dest: /etc/dovecot/conf.d/10-mail.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart dovecot
+  tags: [dovecot, imap, pop3]
+
+- name: Configure Dovecot master settings
+  ansible.builtin.template:
+    src: dovecot/10-master.conf.j2
+    dest: /etc/dovecot/conf.d/10-master.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart dovecot
+  tags: [dovecot, imap, pop3]
+
+- name: Configure Dovecot SSL
+  ansible.builtin.template:
+    src: dovecot/10-ssl.conf.j2
+    dest: /etc/dovecot/conf.d/10-ssl.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart dovecot
+  tags: [dovecot, imap, pop3]
+
+- name: Configure Dovecot LMTP
+  ansible.builtin.template:
+    src: dovecot/20-lmtp.conf.j2
+    dest: /etc/dovecot/conf.d/20-lmtp.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart dovecot
+  tags: [dovecot, imap, pop3]
+
+- name: Install dovecot-sql.conf.ext (only 2.3)
+  ansible.builtin.template:
+    src: dovecot-sql.conf.ext.j2
+    dest: /etc/dovecot/dovecot-sql.conf.ext
+    owner: root
+    group: dovecot
+    mode: '0640'
+  notify: Restart dovecot
+  when: not mailserver_dovecot_sql_v2
+  tags: [dovecot, imap, pop3]
+
+- name: Remove dovecot-sql.conf.ext on Dovecot >= 2.4
+  ansible.builtin.file:
+    path: /etc/dovecot/dovecot-sql.conf.ext
+    state: absent
+  when: mailserver_dovecot_sql_v2
+  tags: [dovecot, imap, pop3]
+
+- name: Install auth-sql.conf.ext
+  ansible.builtin.template:
+    src: dovecot/auth-sql.conf.ext.j2
+    dest: /etc/dovecot/conf.d/auth-sql.conf.ext
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart dovecot
+  tags: [dovecot, imap, pop3]
+
+- name: Generate DH parameters (this may take several minutes)
+  ansible.builtin.command: openssl dhparam -out /etc/dovecot/dh.pem 2048
+  args:
+    creates: /etc/dovecot/dh.pem
+  tags: [dovecot, imap, pop3]
+
+- name: Start and enable Dovecot
+  ansible.builtin.systemd:
+    name: dovecot
+    state: started
+    enabled: true
+  tags: [dovecot, imap, pop3]
