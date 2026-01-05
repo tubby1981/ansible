@@ -176,10 +176,17 @@
    "format": 1
   },
   {
+   "name": "roles/apache/tasks/.main.yml.swp",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "0dab0e24bd189cc6ae1d5f1bf2471ed11a9bc852146a2b21c0fa82599aa56596",
+   "format": 1
+  },
+  {
    "name": "roles/apache/tasks/main.yml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "6f6ad853beda3a2231b8d5f492052e5d707f50c8514fc6a19af8370904efbce1",
+   "chksum_sha256": "3345ed46fe60129c202d90e674f7adb9df1343a98debae583c5a7a5096b362e6",
    "format": 1
   },
   {
@@ -1534,10 +1541,17 @@
    "format": 1
   },
   {
+   "name": "docs/ROUNDCUBE.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "02b31610c0bc1f87a4fc245c0e071b9d1cc671443587bf6b9d1ef6d84929bc35",
+   "format": 1
+  },
+  {
    "name": "docs/index.html",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "e497126b7a9151ff0ec08d9dc31c931dddab6b82f30f26223fb8482d8b6649b8",
+   "chksum_sha256": "0db2fdf212a23c41fac1b696585f6b478da73ae1a5a4f70cdf81eaaf10bf5050",
    "format": 1
   },
   {
@@ -1842,17 +1856,17 @@
    "format": 1
   },
   {
-   "name": "README.md",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "31046d835a2d53b8dc3afa4fda5f8f43f170ab84abf692912561bb466e7ff110",
-   "format": 1
-  },
-  {
    "name": "roundcube.yml",
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "17ff309bc5f47945923856174638a2808096b2901c8a465eca676f0062ed2fdb",
+   "format": 1
+  },
+  {
+   "name": "README.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "cc438f35b1ceb0fe750e2f9d3b7b1fd0840c83d0224d8b37de98a4c221d1ce5c",
    "format": 1
   }
  ],

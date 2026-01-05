@@ -70,6 +70,17 @@ Deploy and manage a production-ready mail server with Postfix, Dovecot, PostfixA
 - 🔒 Security-hardened configuration
 - 🗄️ MySQL/MariaDB backend for virtual users
 
+### roundcube
+Deploy and manage Roundcube webmail with database integration, plugin support, and web server configuration.
+
+- ✅ Automated installation and configuration
+- 📧 IMAP/SMTP integration with mail servers
+- 🔌 Plugin support (managesieve, password, enigma, etc.)
+- 🗄️ MySQL/PostgreSQL database backend
+- 🌐 Apache or Nginx web server support
+- 🔒 Security hardening (deny sensitive directories)
+- 🎨 Multiple themes and language support
+
 ## 🚀 Installation
 
 ### Via Ansible Galaxy
@@ -110,6 +121,7 @@ ansible-galaxy collection install -r requirements.yml
   - Ubuntu 20.04+, Debian 10+, CentOS 8+, RHEL 8+ (apache)
   - Debian 11+, Ubuntu 20.04+ (hetzner_network_override)
   - Ubuntu 20.04+, Debian 11+ (mailserver)
+  - Ubuntu 20.04+, Debian 10+ (roundcube)
 - **Privileges**: Root or sudo access required
 - **Arch Linux**: `base-devel` and `git` for AUR builds (foomuuri)
 - **Mail server**: MariaDB/MySQL database server and Apache web server recommended
@@ -122,6 +134,7 @@ ansible-galaxy collection install -r requirements.yml
 - [MariaDB Role Documentation](roles/mariadb/README.md)
 - [Hetzner Network Override Role Documentation](roles/hetzner_network_override/README.md)
 - [Mailserver Role Documentation](roles/mailserver/README.md)
+- [Roundcube Role Documentation](roles/roundcube/README.md)
 - [Example Playbooks](playbooks/)
 - [Contributing Guidelines](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
@@ -175,6 +188,20 @@ ansible-galaxy collection install -r requirements.yml
     - tubby1981.system.mailserver
 ```
 
+### Roundcube Webmail
+```yaml
+- hosts: webmail
+  become: yes
+  roles:
+    - tubby1981.system.apache
+    - tubby1981.system.php
+    - tubby1981.system.mariadb
+    - tubby1981.system.roundcube
+  vars:
+    roundcube_server_name: webmail.example.com
+    roundcube_default_host: ssl://mail.example.com
+```
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) first.
@@ -226,4 +253,5 @@ sql automation, hetzner cloud, cloud-init override, powerdns recursor,
 recursive dns, dnssec, network automation, static networking,
 mail server, postfix, dovecot, postfixadmin, spamassassin,
 clamav, opendkim, email server, smtp server, imap server, virtual mailboxes,
-spam filtering, antivirus, email security
+spam filtering, antivirus, email security,
+roundcube webmail, webmail server, roundcube ansible, imap webmail
