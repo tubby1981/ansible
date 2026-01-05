@@ -414,13 +414,6 @@
    "format": 1
   },
   {
-   "name": "roles/mariadb/tasks/secure-installation.yml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "205da0b4c82beef9e0efdf4362238122806b74601b41cd11f3888b5098c0402d",
-   "format": 1
-  },
-  {
    "name": "roles/mariadb/tasks/databases.yml",
    "ftype": "file",
    "chksum_type": "sha256",
@@ -432,6 +425,20 @@
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "9929feac038f06f4cde26b88c544091d205cef8b6f865606615a9f1a88983c30",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/.secure-installation.yml.swp",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "0aaf9f30d4814cd4f2adfcfdb835184cbfdf6eb9da5bf7faa6ab11392ae7598a",
+   "format": 1
+  },
+  {
+   "name": "roles/mariadb/tasks/secure-installation.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "1fa1d63e90e043c56e0940d1865beb10700200ac3e829bfe123ab940dfc2e90d",
    "format": 1
   },
   {

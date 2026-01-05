@@ -26,7 +26,7 @@
     mysql -u {{ mailserver_db_user }} -p'{{ mailserver_db_password }}' {{ mailserver_db_name }} \
       -e "SELECT 1 FROM admin WHERE username='{{ mailserver_postfixadmin_admin_email }}' LIMIT 1;" \
       | grep -q 1
-  register: postfixadmin_admin_exists
+  register: mailserver_postfixadmin_admin_exists
   failed_when: false
   changed_when: false
   no_log: true
@@ -38,7 +38,7 @@
       - -r
       - "echo password_hash('{{ mailserver_postfixadmin_setup_password }}', PASSWORD_DEFAULT);"
   register: mailserver_setup_password_hash
-  when: postfixadmin_admin_exists.rc != 0
+  when: mailserver_postfixadmin_admin_exists.rc != 0
   no_log: true
   changed_when: false
 
@@ -49,7 +49,7 @@
     owner: www-data
     group: www-data
     mode: '0640'
-  when: postfixadmin_admin_exists.rc != 0
+  when: mailserver_postfixadmin_admin_exists.rc != 0
   tags: [postfixadmin]
 
 - name: Ensure templates_c directory has correct permissions
@@ -104,7 +104,7 @@
       superadmin = 1;
     EOF
   no_log: true
-  when: postfixadmin_admin_exists.rc != 0
+  when: mailserver_postfixadmin_admin_exists.rc != 0
   register: mailserver_admin_created
   # We consider this changed only if the SQL didn't fail and we actually want to track it
   changed_when: mailserver_admin_created.rc == 0
@@ -113,7 +113,7 @@
 - name: Display admin creation result
   ansible.builtin.debug:
     msg: "Superadmin user created/updated: {{ mailserver_postfixadmin_admin_email }}"
-  when: 
+  when:
     - mailserver_admin_created is not skipped
     - mailserver_admin_created.rc == 0
 
@@ -124,4 +124,4 @@
       - "Access PostfixAdmin at: https://{{ mailserver_hostname }}/{{ mailserver_postfixadmin_url_path }}"
       - "Login with: {{ mailserver_postfixadmin_admin_email }}"
       - "Or visit: https://{{ mailserver_hostname }}/{{ mailserver_postfixadmin_url_path }}/setup.php"
-  when: mailserver_admin_created is not skipped or postfixadmin_admin_exists.rc == 0
+  when: mailserver_admin_created is not skipped or mailserver_postfixadmin_admin_exists.rc == 0

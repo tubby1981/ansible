@@ -47,8 +47,8 @@
     'ALTER USER "{{ mariadb_root_username }}"@"{{ item }}"
     IDENTIFIED WITH mariadb_native_password BY "{{ mariadb_root_password }}"; FLUSH PRIVILEGES;'
   with_items: "{{ mariadb_root_hosts.stdout_lines | default([]) }}"
-  register: update_root_password # <-- VOEG DEZE REGEL TOE
-  changed_when: update_root_password.rc == 0
+  register: mariadb_update_root_password # <-- VOEG DEZE REGEL TOE
+  changed_when: mariadb_update_root_password.rc == 0
   when: >
     ((mariadb_install_packages | bool) or mariadb_root_password_update)
     and ('5.7.' in mariadb_cli_version.stdout or '8.0.' in mariadb_cli_version.stdout)
@@ -59,8 +59,8 @@
     mysql -NBe
     'SET PASSWORD FOR "{{ mariadb_root_username }}"@"{{ item }}" = PASSWORD("{{ mariadb_root_password }}"); FLUSH PRIVILEGES;'
   with_items: "{{ mariadb_root_hosts.stdout_lines | default([]) }}"
-  register: update_root_password_legacy # <-- VOEG DEZE REGEL TOE
-  changed_when: update_root_password_legacy.rc == 0
+  register: mariadb_update_root_password_legacy # <-- VOEG DEZE REGEL TOE
+  changed_when: mariadb_update_root_password_legacy.rc == 0
   when: >
     ((mariadb_install_packages | bool) or mariadb_root_password_update)
     and ('5.7.' not in mariadb_cli_version.stdout and '8.0.' not in mariadb_cli_version.stdout)
