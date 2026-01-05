@@ -1,0 +1,64 @@
+# roles/hetzner_network_override/tasks/dns.yml
+
+- name: Install PowerDNS Recursor
+  ansible.builtin.apt:
+    name: pdns-recursor
+    state: present
+    update_cache: true
+  when: hetzner_network_override_install_pdns_recursor | bool
+
+- name: Stop PowerDNS Recursor before configuration
+  ansible.builtin.systemd:
+    name: pdns-recursor
+    state: stopped
+  when: hetzner_network_override_install_pdns_recursor | bool
+  failed_when: false  # Replaces ignore_errors: true
+
+- name: Configure PowerDNS Recursor
+  ansible.builtin.template:
+    src: recursor.conf.j2
+    dest: /etc/powerdns/recursor.conf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+  notify: Restart pdns-recursor
+  when: hetzner_network_override_install_pdns_recursor | bool
+
+- name: Ensure PowerDNS Recursor is enabled and started
+  ansible.builtin.systemd:
+    name: pdns-recursor
+    enabled: true
+    state: started
+  when: hetzner_network_override_install_pdns_recursor | bool
+
+- name: Wait for PowerDNS Recursor to be ready
+  ansible.builtin.wait_for:
+    host: "{{ hetzner_network_override_pdns_local_address }}"
+    port: "{{ hetzner_network_override_pdns_local_port }}"
+    timeout: 30
+  when: hetzner_network_override_install_pdns_recursor | bool
+
+- name: Remove immutable attribute from resolv.conf (if exists)
+  ansible.builtin.command: chattr -i /etc/resolv.conf
+  changed_when: false
+  failed_when: false
+
+- name: Configure resolv.conf for local DNS
+  ansible.builtin.copy:
+    dest: /etc/resolv.conf
+    content: |
+      # Managed by Ansible - hetzner_network_override role
+      # Local DNS resolver (PowerDNS Recursor)
+      nameserver {{ hetzner_network_override_pdns_local_address }}
+      {% if hetzner_network_override_resolv_conf_options %}
+      options {{ hetzner_network_override_resolv_conf_options }}
+      {% endif %}
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Make resolv.conf immutable to prevent DHCP from overwriting
+  ansible.builtin.command: chattr +i /etc/resolv.conf
+  changed_when: true
+  when: hetzner_network_override_make_resolv_immutable | bool

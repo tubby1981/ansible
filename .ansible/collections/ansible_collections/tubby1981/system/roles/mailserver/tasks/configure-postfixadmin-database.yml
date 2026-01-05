@@ -1,0 +1,127 @@
+---
+# PostfixAdmin Database Setup (from step 3 of INSTALL.TXT)
+
+# 3. Setup a Database
+- name: Create PostfixAdmin MySQL database
+  community.mysql.mysql_db:
+    name: "{{ mailserver_db_name }}"
+    state: present
+    encoding: utf8mb4
+    collation: utf8mb4_unicode_ci
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  register: mailserver_db_created
+
+- name: Create PostfixAdmin MySQL user
+  community.mysql.mysql_user:
+    name: "{{ mailserver_db_user }}"
+    password: "{{ mailserver_db_password }}"
+    priv: "{{ mailserver_db_name }}.*:ALL"
+    host: localhost
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+# 4. Configure PostfixAdmin so it can find the database
+- name: Check if PostfixAdmin admin already exists
+  ansible.builtin.shell: |
+    mysql -u {{ mailserver_db_user }} -p'{{ mailserver_db_password }}' {{ mailserver_db_name }} \
+      -e "SELECT 1 FROM admin WHERE username='{{ mailserver_postfixadmin_admin_email }}' LIMIT 1;" \
+      | grep -q 1
+  register: postfixadmin_admin_exists
+  failed_when: false
+  changed_when: false
+  no_log: true
+
+- name: Generate PostfixAdmin setup password hash (once)
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/php
+      - -r
+      - "echo password_hash('{{ mailserver_postfixadmin_setup_password }}', PASSWORD_DEFAULT);"
+  register: mailserver_setup_password_hash
+  when: postfixadmin_admin_exists.rc != 0
+  no_log: true
+  changed_when: false
+
+- name: Configure PostfixAdmin (first install)
+  ansible.builtin.template:
+    src: postfixadmin/config.local.php.j2
+    dest: "{{ mailserver_postfixadmin_install_dir }}/config.local.php"
+    owner: www-data
+    group: www-data
+    mode: '0640'
+  when: postfixadmin_admin_exists.rc != 0
+  tags: [postfixadmin]
+
+- name: Ensure templates_c directory has correct permissions
+  ansible.builtin.file:
+    path: "{{ mailserver_postfixadmin_install_dir }}/templates_c"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+# 5. Check settings, and create Admin user (via upgrade.php)
+- name: Check if PostfixAdmin database tables exist
+  ansible.builtin.shell: |
+    set -o pipefail
+    mysql -u {{ mailserver_db_user }} -p'{{ mailserver_db_password }}' {{ mailserver_db_name }} -e "SHOW TABLES LIKE 'admin';" | grep -c admin || true
+  args:
+    executable: /bin/bash
+  register: mailserver_tables_exist
+  changed_when: false
+  no_log: true
+
+- name: Verify PostfixAdmin database tables were created
+  ansible.builtin.shell: |
+    set -o pipefail
+    mysql -u {{ mailserver_db_user }} -p'{{ mailserver_db_password }}' {{ mailserver_db_name }} -e "SHOW TABLES;"
+  args:
+    executable: /bin/bash
+  register: mailserver_db_tables
+  changed_when: false
+  no_log: true
+
+- name: Display created database tables
+  ansible.builtin.debug:
+    msg: "{{ mailserver_db_tables.stdout_lines }}"
+
+- name: Create PostfixAdmin superadmin user
+  ansible.builtin.shell: |
+    mysql -u {{ mailserver_db_user }} -p'{{ mailserver_db_password }}' {{ mailserver_db_name }} << EOF
+    INSERT INTO admin (username, password, created, modified, active, superadmin)
+    VALUES (
+      '{{ mailserver_postfixadmin_admin_email }}',
+      '{{ mailserver_setup_password_hash.stdout }}',
+      NOW(),
+      NOW(),
+      1,
+      1
+    )
+    ON DUPLICATE KEY UPDATE
+      password = '{{ mailserver_setup_password_hash.stdout }}',
+      modified = NOW(),
+      active = 1,
+      superadmin = 1;
+    EOF
+  no_log: true
+  when: postfixadmin_admin_exists.rc != 0
+  register: mailserver_admin_created
+  # We consider this changed only if the SQL didn't fail and we actually want to track it
+  changed_when: mailserver_admin_created.rc == 0
+  failed_when: mailserver_admin_created.rc != 0
+
+- name: Display admin creation result
+  ansible.builtin.debug:
+    msg: "Superadmin user created/updated: {{ mailserver_postfixadmin_admin_email }}"
+  when: 
+    - mailserver_admin_created is not skipped
+    - mailserver_admin_created.rc == 0
+
+- name: PostfixAdmin setup complete
+  ansible.builtin.debug:
+    msg:
+      - "PostfixAdmin database setup complete!"
+      - "Access PostfixAdmin at: https://{{ mailserver_hostname }}/{{ mailserver_postfixadmin_url_path }}"
+      - "Login with: {{ mailserver_postfixadmin_admin_email }}"
+      - "Or visit: https://{{ mailserver_hostname }}/{{ mailserver_postfixadmin_url_path }}/setup.php"
+  when: mailserver_admin_created is not skipped or postfixadmin_admin_exists.rc == 0

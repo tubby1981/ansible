@@ -1,0 +1,64 @@
+# roles/hetzner_network_override/templates/recursor.conf.j2
+# Managed by Ansible - hetzner_network_override role
+# PowerDNS Recursor YAML configuration for local recursive DNS resolution
+
+incoming:
+  # Listen on localhost only
+  listen:
+    - {{ hetzner_network_override_pdns_local_address }}:{{ hetzner_network_override_pdns_local_port }}
+  
+  # Allow queries from localhost
+  allow_from:
+    - 127.0.0.0/8
+    - ::1/128
+
+dnssec:
+  # DNSSEC validation: off, process-no-validate, process, log-fail, validate
+  validation: {{ hetzner_network_override_pdns_dnssec }}
+
+logging:
+  # Logging level (0-9, higher = more verbose)
+  loglevel: {{ hetzner_network_override_pdns_log_level }}
+{% if hetzner_network_override_pdns_log_common_errors %}
+  common_errors: true
+{% else %}
+  common_errors: false
+{% endif %}
+
+recursor:
+  # Security - run as specific user
+  setuid: pdns
+  setgid: pdns
+  
+  # Performance tuning
+  threads: {{ hetzner_network_override_pdns_threads }}
+  
+  # Don't become a DNS amplification vector
+  max_total_msec: 7000
+
+outgoing:
+  # Maximum queries per query
+  max_qperq: 50
+
+recordcache:
+  # Maximum cache entries
+  max_entries: {{ hetzner_network_override_pdns_max_cache_entries }}
+  
+  # Maximum negative TTL
+  max_negative_ttl: {{ hetzner_network_override_pdns_max_negative_ttl }}
+
+{% if hetzner_network_override_pdns_forward_zones | length > 0 %}
+recursor:
+  # Forward zones configuration (for internal domains)
+  forward_zones_recurse:
+{% for zone in hetzner_network_override_pdns_forward_zones %}
+    - zone: {{ zone.zone }}
+      forwarders:
+{% for forwarder in zone.forwarders.split(';') %}
+        - {{ forwarder }}
+{% endfor %}
+{% endfor %}
+{% endif %}
+
+# Hint file is automatically used for root servers
+# No need to specify forward-zones for recursive resolution

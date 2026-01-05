@@ -59,33 +59,6 @@ foomuuri_extra_zones: []
 #   - name: "internal"
 #     interfaces: ["eth2", "eth3"]
 
-# Monitoring services configuration (optional)
-# Generic monitoring system support - configure in host_vars/group_vars
-foomuuri_monitoring_enabled: false
-foomuuri_monitoring_services: []
-# Example:
-# foomuuri_monitoring_enabled: true
-# foomuuri_monitoring_services:
-#   - name: "nagios"
-#     port: "tcp 5666"
-#     sources:
-#       public: ["203.0.113.10"]
-#       management: ["10.0.0.10"]
-#   - name: "snmp"
-#     port: "udp 161"
-#     sources:
-#       management: ["10.0.0.0/8"]
-
-# Management access configuration
-foomuuri_management_enabled: false
-foomuuri_management_services: ["ssh", "ping"]
-foomuuri_management_sources: []
-# Example:
-# foomuuri_management_enabled: true
-# foomuuri_management_sources:
-#   - "192.168.1.0/24"
-#   - "10.0.0.0/8"
-
 # Macro definitions
 # Built-in service macros are available in /usr/share/foomuuri/default.services.conf
 foomuuri_macros: []
@@ -147,15 +120,11 @@ foomuuri_extra_templates: {}
 
 # Zone policies
 # Define traffic rules between zones
-foomuuri_zone_policies: []
-
-# Default policy for localhost (if no custom policies defined)
-foomuuri_default_localhost_policy:
+foomuuri_zone_policies:
   - from_zone: "public"
     to_zone: "localhost"
     rules:
       - "ping"
-      - "ssh"
       - "drop log"
 
 # Extra zone policies (use in host_vars/group_vars)
@@ -256,6 +225,7 @@ foomuuri_raw_nft_files: []
 # Example:
 # foomuuri_raw_nft_files:
 #   - name: "custom-rules.nft"
+#     enabled: false
 #     content: |
 #       # Custom nftables rules
 #       table inet filter {

@@ -1,0 +1,26 @@
+---
+# RedHat/CentOS/Rocky specific variables for Roundcube
+
+roundcube_additional_packages:
+  - composer
+  - unzip
+  - wget
+
+roundcube_user: "{{ php_fpm_pool_user | default('apache') }}"
+roundcube_group: "{{ php_fpm_pool_group | default('apache') }}"
+
+# Apache specific
+roundcube_apache_service: "{{ php_webserver_name | default('httpd') }}"
+roundcube_apache_config_dir: /etc/httpd
+roundcube_apache_vhost_dir: /etc/httpd/conf.d
+roundcube_apache_vhost_enabled_dir: /etc/httpd/conf.d
+
+# Nginx specific
+roundcube_nginx_service: nginx
+roundcube_nginx_config_dir: /etc/nginx
+roundcube_nginx_vhost_dir: /etc/nginx/conf.d
+roundcube_nginx_vhost_enabled_dir: /etc/nginx/conf.d
+
+# PHP-FPM
+roundcube_php_fpm_service: php-fpm
+roundcube_php_fpm_pool_dir: /etc/php-fpm.d

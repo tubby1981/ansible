@@ -1,0 +1,183 @@
+---
+- name: Load OS-specific variables
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Install Roundcube-specific PHP extensions
+  ansible.builtin.package:
+    name: "{{ roundcube_required_php_extensions }}"
+    state: present
+    update_cache: true
+  when: roundcube_use_existing_php | default(true)
+
+- name: Install additional required packages for Roundcube
+  ansible.builtin.package:
+    name: "{{ roundcube_additional_packages }}"
+    state: present
+
+- name: Create roundcube group
+  ansible.builtin.group:
+    name: "{{ roundcube_group }}"
+    state: present
+
+- name: Create roundcube user
+  ansible.builtin.user:
+    name: "{{ roundcube_user }}"
+    group: "{{ roundcube_group }}"
+    home: "{{ roundcube_install_dir }}"
+    shell: /bin/false
+    system: true
+    create_home: false
+  when: roundcube_user != "www-data"
+
+- name: Create temp directory for download
+  ansible.builtin.file:
+    path: "{{ roundcube_temp_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Check if Roundcube is already installed
+  ansible.builtin.stat:
+    path: "{{ roundcube_install_dir }}/index.php"
+  register: roundcube_installed
+
+- name: Download Roundcube
+  ansible.builtin.get_url:
+    url: "{{ roundcube_download_url }}"
+    dest: "{{ roundcube_temp_dir }}/roundcube.tar.gz"
+    mode: '0644'
+  register: roundcube_download
+  when: not roundcube_installed.stat.exists
+
+- name: Extract Roundcube
+  ansible.builtin.unarchive:
+    src: "{{ roundcube_temp_dir }}/roundcube.tar.gz"
+    dest: "{{ roundcube_temp_dir }}"
+    remote_src: true
+    creates: "{{ roundcube_temp_dir }}/roundcubemail-{{ roundcube_version }}"
+  when: not roundcube_installed.stat.exists
+
+- name: Create installation directory
+  ansible.builtin.file:
+    path: "{{ roundcube_install_dir }}"
+    state: directory
+    owner: "{{ roundcube_user }}"
+    group: "{{ roundcube_group }}"
+    mode: '0755'
+
+- name: Copy Roundcube files to installation directory
+  ansible.posix.synchronize:
+    src: "{{ roundcube_temp_dir }}/roundcubemail-{{ roundcube_version }}/"
+    dest: "{{ roundcube_install_dir }}/"
+  delegate_to: "{{ inventory_hostname }}"
+  when: not roundcube_installed.stat.exists
+
+- name: Set correct ownership after copy
+  ansible.builtin.file:
+    path: "{{ roundcube_install_dir }}"
+    owner: "{{ roundcube_user }}"
+    group: "{{ roundcube_group }}"
+    recurse: true
+  when: not roundcube_installed.stat.exists
+
+- name: Create logs directory
+  ansible.builtin.file:
+    path: "{{ roundcube_install_dir }}/logs"
+    state: directory
+    owner: "{{ roundcube_user }}"
+    group: "{{ roundcube_group }}"
+    mode: '0775'
+
+- name: Create temp directory
+  ansible.builtin.file:
+    path: "{{ roundcube_install_dir }}/temp"
+    state: directory
+    owner: "{{ roundcube_user }}"
+    group: "{{ roundcube_group }}"
+    mode: '0775'
+
+- name: Generate DES key if not provided
+  ansible.builtin.set_fact:
+    roundcube_des_key: "{{ lookup('password', '/dev/null length=24 chars=ascii_letters,digits') }}"
+  when: roundcube_des_key == ""
+
+- name: Create Roundcube configuration file
+  ansible.builtin.template:
+    src: config.inc.php.j2
+    dest: "{{ roundcube_install_dir }}/config/config.inc.php"
+    owner: "{{ roundcube_user }}"
+    group: "{{ roundcube_group }}"
+    mode: '0640'
+  notify: Restart webserver
+
+- name: Install Composer dependencies
+  community.general.composer:
+    command: install
+    working_dir: "{{ roundcube_install_dir }}"
+    no_dev: true
+  become: true
+  become_user: "{{ roundcube_user }}"
+  when: roundcube_install_composer_deps
+
+- name: Create Roundcube database
+  community.mysql.mysql_db:
+    name: "{{ roundcube_database_name }}"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  when:
+    - roundcube_database_type == "mysql"
+    - roundcube_use_existing_mariadb | default(true)
+
+- name: Create Roundcube database user
+  community.mysql.mysql_user:
+    name: "{{ roundcube_database_user }}"
+    password: "{{ roundcube_database_password }}"
+    priv: "{{ roundcube_database_name }}.*:ALL"
+    host: "{{ item }}"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  loop:
+    - localhost
+    - '%'
+  when:
+    - roundcube_database_type == "mysql"
+    - roundcube_use_existing_mariadb | default(true)
+
+- name: Check if database is initialized
+  community.mysql.mysql_query:
+    login_db: "{{ roundcube_database_name }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    query: "SHOW TABLES LIKE 'users'"
+  register: roundcube_db_check
+  when: roundcube_database_type == "mysql"
+  changed_when: false
+  failed_when: false
+
+- name: Initialize database schema
+  community.mysql.mysql_db:
+    name: "{{ roundcube_database_name }}"
+    state: import
+    target: "{{ roundcube_install_dir }}/SQL/mysql.initial.sql"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  when:
+    - roundcube_database_type == "mysql"
+    - roundcube_db_check.rowcount is defined
+    - roundcube_db_check.rowcount[0] == 0
+
+- name: Set correct permissions on Roundcube directory
+  ansible.builtin.file:
+    path: "{{ roundcube_install_dir }}"
+    owner: "{{ roundcube_user }}"
+    group: "{{ roundcube_group }}"
+    recurse: true
+    state: directory
+
+- name: Remove installer directory (security)
+  ansible.builtin.file:
+    path: "{{ roundcube_install_dir }}/installer"
+    state: absent
+  when: not roundcube_enable_installer
+
+- name: Clean up temp directory
+  ansible.builtin.file:
+    path: "{{ roundcube_temp_dir }}"
+    state: absent

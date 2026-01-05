@@ -1,0 +1,46 @@
+# roles/hetzner_network_override/tasks/validate.yml
+
+- name: Validate required network configuration
+  ansible.builtin.assert:
+    that:
+      - hetzner_network_override_ipv4_address != ""
+      - hetzner_network_override_ipv4_gateway != ""
+      - hetzner_network_override_ipv4_address is match('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$')
+      - hetzner_network_override_ipv4_gateway is match('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$')
+    fail_msg: "IPv4 configuration is incomplete or invalid"
+    success_msg: "IPv4 configuration validated"
+
+- name: Validate IPv6 configuration (if provided)
+  ansible.builtin.assert:
+    that:
+      - hetzner_network_override_ipv6_address is match('^[0-9a-fA-F:]+$')
+      - hetzner_network_override_ipv6_prefix | int > 0
+      - hetzner_network_override_ipv6_prefix | int <= 128
+    fail_msg: "IPv6 configuration is invalid"
+    success_msg: "IPv6 configuration validated"
+  when:
+    - hetzner_network_override_ipv6_address is defined
+    - hetzner_network_override_ipv6_address != ""
+
+- name: Safety confirmation prompt
+  ansible.builtin.pause:
+    prompt: |
+
+      ⚠️  WARNING: Network Configuration Changes ⚠️
+
+      This role will modify network configuration on: {{ inventory_hostname }}
+
+      Current configuration:
+        IPv4: {{ ansible_default_ipv4.address | default('N/A') }}
+        IPv6: {{ ansible_default_ipv6.address | default('N/A') }}
+
+      New configuration:
+        IPv4: {{ hetzner_network_override_ipv4_address }}
+        Gateway: {{ hetzner_network_override_ipv4_gateway }}
+        IPv6: {{ hetzner_network_override_ipv6_address }}/{{ hetzner_network_override_ipv6_prefix }}
+
+      ⚠️  Make sure you have console access via Hetzner Cloud Console!
+      ⚠️  SSH connection may be interrupted during network restart!
+
+      Press ENTER to continue or Ctrl+C to abort...
+  when: hetzner_network_override_require_confirmation | bool

@@ -1,7 +1,7 @@
 ---
 namespace: tubby1981
 name: system
-version: 1.0.5
+version: 1.0.6
 readme: README.md
 authors:
   - Tubby1981 <tubby1981@users.noreply.github.com>
@@ -11,9 +11,9 @@ description: >-
   dynamic IP lists, and comprehensive security features. Includes roles
   for Apache2 webserver with Let's Encrypt SSL, MariaDB database server,
   PHP and phpMyAdmin support, Hetzner Cloud network automation with 
-  PowerDNS Recursor for recursive DNS resolution, and a production-ready 
+  PowerDNS Recursor for recursive DNS resolution, production-ready 
   mail server with Postfix, Dovecot, PostfixAdmin, SpamAssassin, ClamAV, 
-  and OpenDKIM.
+  OpenDKIM, and Roundcube webmail with full IMAP/SMTP integration.
 license: MIT
 tags:
   - firewall
@@ -33,7 +33,7 @@ tags:
   - postfix
   - dovecot
   - spamassassin
-  - monitoring
+  - webmail
   - automation
   - devops
 dependencies: {}

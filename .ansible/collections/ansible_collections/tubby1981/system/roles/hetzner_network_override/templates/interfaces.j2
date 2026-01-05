@@ -1,0 +1,22 @@
+# roles/hetzner_network_override/templates/interfaces.j2
+# Managed by Ansible - hetzner_network_override role
+# Static network configuration for {{ inventory_hostname }}
+# DO NOT EDIT MANUALLY - Changes will be overwritten
+
+auto lo
+iface lo inet loopback
+
+auto {{ hetzner_network_override_network_interface }}
+iface {{ hetzner_network_override_network_interface }} inet static
+    address {{ hetzner_network_override_ipv4_address }}
+    netmask 255.255.255.255
+    gateway {{ hetzner_network_override_ipv4_gateway }}
+    dns-nameservers 127.0.0.1
+
+{% if hetzner_network_override_ipv6_address != "" and hetzner_ipv6_address is defined %}
+iface {{ hetzner_network_override_network_interface }} inet6 static
+    address {{ hetzner_network_override_ipv6_address }}
+    netmask {{ hetzner_network_override_ipv6_prefix }}
+    gateway {{ hetzner_network_override_ipv6_gateway }}
+    dns-nameservers 127.0.0.1
+{% endif %}

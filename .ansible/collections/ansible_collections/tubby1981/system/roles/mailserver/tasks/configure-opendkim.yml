@@ -1,0 +1,204 @@
+---
+# OpenDKIM configuration tasks for email signing
+
+- name: Create OpenDKIM directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: opendkim
+    group: opendkim
+    mode: '0750'
+  loop:
+    - /etc/opendkim
+    - /etc/opendkim/keys
+    - "/etc/opendkim/keys/{{ mailserver_domain }}"
+  tags: [dkim]
+
+- name: Create OpenDKIM runtime directory
+  ansible.builtin.file:
+    path: /run/opendkim
+    state: directory
+    owner: opendkim
+    group: opendkim
+    mode: '0755'
+  tags: [dkim]
+
+- name: Create systemd tmpfiles.d config for OpenDKIM
+  ansible.builtin.copy:
+    dest: /etc/tmpfiles.d/opendkim.conf
+    content: |
+      # OpenDKIM runtime directory
+      d /run/opendkim 0755 opendkim opendkim -
+    mode: '0644'
+  tags: [dkim]
+
+- name: Configure OpenDKIM
+  ansible.builtin.template:
+    src: opendkim/opendkim.conf.j2
+    dest: /etc/opendkim.conf
+    owner: opendkim
+    group: opendkim
+    mode: '0644'
+  notify: Restart opendkim
+  tags: [dkim]
+
+- name: Create OpenDKIM trusted hosts file
+  ansible.builtin.copy:
+    dest: /etc/opendkim/TrustedHosts
+    content: |
+      127.0.0.1
+      localhost
+      {{ mailserver_hostname }}
+      {{ mailserver_domain }}
+      {% for domain in mailserver_additional_domains | default([]) %}
+      {{ domain }}
+      {% endfor %}
+    owner: opendkim
+    group: opendkim
+    mode: '0644'
+  tags: [dkim]
+
+- name: Create OpenDKIM key table
+  ansible.builtin.copy:
+    dest: /etc/opendkim/KeyTable
+    content: >
+      {{ mailserver_opendkim_selector }}._domainkey.{{ mailserver_domain }}
+      {{ mailserver_domain }}:{{ mailserver_opendkim_selector }}:/etc/opendkim/keys/{{ mailserver_domain }}/{{ mailserver_opendkim_selector }}.private
+      {% for domain in mailserver_additional_domains | default([]) %}
+      {{ mailserver_opendkim_selector }}._domainkey.{{ domain }}
+      {{ domain }}:{{ mailserver_opendkim_selector }}:/etc/opendkim/keys/{{ domain }}/{{ mailserver_opendkim_selector }}.private
+      {% endfor %}
+    owner: opendkim
+    group: opendkim
+    mode: '0644'
+  tags: [dkim]
+
+- name: Create OpenDKIM signing table
+  ansible.builtin.copy:
+    dest: /etc/opendkim/SigningTable
+    content: >
+      *@{{ mailserver_domain }}
+      {{ mailserver_opendkim_selector }}._domainkey.{{ mailserver_domain }}
+      {% for domain in mailserver_additional_domains | default([]) %}
+      *@{{ domain }} {{ mailserver_opendkim_selector }}._domainkey.{{ domain }}
+      {% endfor %}
+    owner: opendkim
+    group: opendkim
+    mode: '0644'
+  tags: [dkim]
+
+- name: Create directories for additional domains
+  ansible.builtin.file:
+    path: "/etc/opendkim/keys/{{ item }}"
+    state: directory
+    owner: opendkim
+    group: opendkim
+    mode: '0750'
+  loop: "{{ mailserver_additional_domains | default([]) }}"
+  when: mailserver_additional_domains is defined
+  tags: [dkim]
+
+- name: Generate DKIM key pair for primary domain
+  ansible.builtin.command: >
+    opendkim-genkey -b {{ mailserver_opendkim_key_size }}
+    -d {{ mailserver_domain }}
+    -s {{ mailserver_opendkim_selector }}
+    -D /etc/opendkim/keys/{{ mailserver_domain }}/
+  args:
+    creates: "/etc/opendkim/keys/{{ mailserver_domain }}/{{ mailserver_opendkim_selector }}.private"
+  tags: [dkim]
+
+- name: Generate DKIM keys for additional domains
+  ansible.builtin.command: >
+    opendkim-genkey -b {{ mailserver_opendkim_key_size }}
+    -d {{ item }}
+    -s {{ mailserver_opendkim_selector }}
+    -D /etc/opendkim/keys/{{ item }}/
+  args:
+    creates: "/etc/opendkim/keys/{{ item }}/{{ mailserver_opendkim_selector }}.private"
+  loop: "{{ mailserver_additional_domains | default([]) }}"
+  when: mailserver_additional_domains is defined
+  tags: [dkim]
+
+- name: Set ownership of DKIM keys for primary domain
+  ansible.builtin.file:
+    path: "/etc/opendkim/keys/{{ mailserver_domain }}/{{ mailserver_opendkim_selector }}.{{ item }}"
+    owner: opendkim
+    group: opendkim
+    mode: "{{ '0600' if item == 'private' else '0644' }}"
+  loop:
+    - private
+    - txt
+  tags: [dkim]
+
+- name: Create readable DKIM DNS record file for primary domain
+  ansible.builtin.shell: |
+    set -o pipefail
+    cat /etc/opendkim/keys/{{ mailserver_domain }}/{{ mailserver_opendkim_selector }}.txt | \
+    sed 's/[[:space:]]//g' | sed 's/"//g' | sed 's/)/)\n/' > \
+    /etc/opendkim/keys/{{ mailserver_domain }}/mail.txt
+  args:
+    executable: /bin/bash
+    creates: "/etc/opendkim/keys/{{ mailserver_domain }}/mail.txt"
+  tags: [dkim]
+
+- name: Create readable DKIM DNS record files for additional domains
+  ansible.builtin.shell: |
+    set -o pipefail
+    cat /etc/opendkim/keys/{{ item }}/{{ mailserver_opendkim_selector }}.txt | \
+    sed 's/[[:space:]]//g' | sed 's/"//g' | sed 's/)/)\n/' > \
+    /etc/opendkim/keys/{{ item }}/mail.txt
+  args:
+    executable: /bin/bash
+    creates: "/etc/opendkim/keys/{{ item }}/mail.txt"
+  loop: "{{ mailserver_additional_domains | default([]) }}"
+  when: mailserver_additional_domains is defined
+  tags: [dkim]
+
+- name: Configure OpenDKIM socket in defaults
+  ansible.builtin.lineinfile:
+    path: /etc/default/opendkim
+    regexp: '^SOCKET='
+    line: 'SOCKET="inet:8891@localhost"'
+    owner: root
+    group: root
+    mode: '0644'
+    create: true
+  tags: [dkim]
+
+- name: Create systemd override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/opendkim.service.d
+    state: directory
+    mode: '0755'
+  tags: [dkim]
+
+- name: Create systemd service override for OpenDKIM
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/opendkim.service.d/override.conf
+    content: |
+      [Service]
+      Type=simple
+      RuntimeDirectory=opendkim
+      RuntimeDirectoryMode=0755
+    mode: '0644'
+  tags: [dkim]
+
+- name: Add postfix user to opendkim group
+  ansible.builtin.user:
+    name: postfix
+    groups: opendkim
+    append: true
+  tags: [dkim]
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+  tags: [dkim]
+
+- name: Start and enable OpenDKIM
+  ansible.builtin.systemd:
+    name: opendkim
+    state: started
+    enabled: true
+  tags: [dkim]

@@ -1,0 +1,22 @@
+#MilterSocket unix:/var/run/clamav/clamav-milter.ctl
+MilterSocket inet:8891@127.0.0.1
+MilterSocketMode 660
+FixStaleSocket true
+User clamav
+ReadTimeout 120
+Foreground false
+PidFile /var/run/clamav/clamav-milter.pid
+ClamdSocket unix:/var/run/clamav/clamd.ctl
+OnClean Accept
+OnInfected Reject
+OnFail Defer
+AddHeader Replace
+LogSyslog false
+LogFacility LOG_LOCAL6
+LogVerbose false
+LogInfected Basic
+LogClean Off
+LogTime true
+SupportMultipleRecipients false
+MaxFileSize {{ mailserver_clamav_max_file_size }}
+TemporaryDirectory /tmp

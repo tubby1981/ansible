@@ -1,0 +1,161 @@
+---
+# Mail Server Role - Main Tasks
+# Orchestrates the complete mail server deployment
+
+# ========================================
+# System Preparation
+# ========================================
+- name: Load OS-specific variables
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_distribution }}.yml"
+    - "default.yml"
+  tags: [always]
+
+- name: Install essential packages
+  ansible.builtin.include_role:
+    name: package_manager
+  vars:
+    package_manager_names: "{{ mailserver_debian_essential_packages | default(package_manager_debian_essential_packages_default) }}"
+    package_manager_debian_essential_packages_default:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - python3-pip
+      - git
+      - vim
+      - net-tools
+      - dnsutils
+      - mailutils
+      - systemd-timesyncd
+    package_manager_state: present
+  tags: [packages, system]
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ mailserver_timezone }}"
+  tags: [system]
+
+- name: Ensure systemd-timesyncd is enabled
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: started
+    enabled: true
+  tags: [system]
+
+# ========================================
+# Mail User and Storage
+# ========================================
+- name: Create mail user group
+  ansible.builtin.group:
+    name: vmail
+    gid: "{{ mailserver_gid }}"
+    state: present
+  tags: [mail_user]
+
+- name: Create mail user
+  ansible.builtin.user:
+    name: vmail
+    uid: "{{ mailserver_uid }}"
+    group: vmail
+    shell: /usr/sbin/nologin
+    home: "{{ mailserver_storage_path }}"
+    createhome: false
+    state: present
+  tags: [mail_user]
+
+- name: Create mail storage directory
+  ansible.builtin.file:
+    path: "{{ mailserver_storage_path }}"
+    state: directory
+    owner: vmail
+    group: vmail
+    mode: '0770'
+  when: mailserver_server_mode in ['mailboxes', 'both']
+  tags: [mail_user, storage]
+
+- name: Create domain directory in mail storage
+  ansible.builtin.file:
+    path: "{{ mailserver_storage_path }}/{{ mailserver_domain }}"
+    state: directory
+    owner: vmail
+    group: vmail
+    mode: '0770'
+  when: mailserver_server_mode in ['mailboxes', 'both']
+  tags: [mail_user, storage]
+
+# ========================================
+# Postfix MTA
+# ========================================
+- name: Configure Postfix
+  ansible.builtin.include_tasks: configure-postfix.yml
+  tags: [postfix]
+
+# ========================================
+# Dovecot IMAP/POP3 (mailboxes mode)
+# ========================================
+- name: Configure Dovecot
+  ansible.builtin.include_tasks: configure-dovecot.yml
+  when: mailserver_server_mode in ['mailboxes', 'both']
+  tags: [dovecot]
+
+# ========================================
+# OpenDKIM
+# ========================================
+- name: Install OpenDKIM packages
+  ansible.builtin.include_role:
+    name: package_manager
+  vars:
+    package_manager_names: "{{ mailserver_opendkim_packages | default(['opendkim', 'opendkim-tools']) }}"
+    package_manager_state: present
+  tags: [dkim, packages]
+
+- name: Configure OpenDKIM
+  ansible.builtin.include_tasks: configure-opendkim.yml
+  tags: [dkim]
+
+# ========================================
+# Anti-Spam and Anti-Virus
+# ========================================
+- name: Configure SpamAssassin
+  ansible.builtin.include_tasks: configure-spamassassin.yml
+  when: mailserver_spamassassin_enabled | default(true)
+  tags: [spamassassin, antispam]
+
+- name: Configure ClamAV
+  ansible.builtin.include_tasks: configure-clamav.yml
+  when: mailserver_clamav_enabled | default(true)
+  tags: [clamav, antivirus]
+
+# ========================================
+# PostfixAdmin
+# ========================================
+- name: Configure PostfixAdmin
+  ansible.builtin.include_tasks: configure-postfixadmin.yml
+  tags: [postfixadmin]
+
+# ========================================
+# Post-Deployment
+# ========================================
+- name: Display DKIM key location
+  ansible.builtin.debug:
+    msg: "DKIM public key: /etc/opendkim/keys/{{ mailserver_domain }}/mail.txt"
+  tags: [info]
+
+- name: Display PostfixAdmin URL
+  ansible.builtin.debug:
+    msg: "PostfixAdmin: https://{{ mailserver_hostname }}/{{ mailserver_postfixadmin_url_path }}/"
+  tags: [info]
+
+- name: Display completion message
+  ansible.builtin.debug:
+    msg:
+      - "=========================================="
+      - "Mail server deployment completed!"
+      - "=========================================="
+      - "Mode: {{ mailserver_server_mode }}"
+      - "Domain: {{ mailserver_domain }}"
+      - "Hostname: {{ mailserver_hostname }}"
+  tags: [info]

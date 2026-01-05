@@ -1,0 +1,39 @@
+---
+- name: Restart apache
+  ansible.builtin.service:
+    name: "{{ roundcube_apache_service }}"
+    state: restarted
+  when: roundcube_webserver == "apache"
+
+- name: Reload apache
+  ansible.builtin.service:
+    name: "{{ roundcube_apache_service }}"
+    state: reloaded
+  when: roundcube_webserver == "apache"
+
+- name: Restart nginx
+  ansible.builtin.service:
+    name: "{{ roundcube_nginx_service }}"
+    state: restarted
+  when: roundcube_webserver == "nginx"
+
+- name: Reload nginx
+  ansible.builtin.service:
+    name: "{{ roundcube_nginx_service }}"
+    state: reloaded
+  when: roundcube_webserver == "nginx"
+
+- name: Restart php-fpm
+  ansible.builtin.service:
+    name: "{{ roundcube_php_fpm_service }}"
+    state: restarted
+
+- name: Reload php-fpm
+  ansible.builtin.service:
+    name: "{{ roundcube_php_fpm_service }}"
+    state: reloaded
+
+- name: Restart webserver
+  ansible.builtin.service:
+    name: "{{ roundcube_apache_service if roundcube_webserver == 'apache' else roundcube_nginx_service }}"
+    state: restarted

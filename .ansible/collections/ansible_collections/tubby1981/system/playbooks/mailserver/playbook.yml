@@ -1,0 +1,363 @@
+---
+- name: Deploy Secure Mail Server
+  hosts: mailservers
+  become: true
+  
+  vars_files:
+    - vars/main.yml
+    - vars/vault.yml
+  
+  pre_tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+    
+    - name: Set hostname
+      hostname:
+        name: "{{ mail_hostname }}"
+    
+    - name: Update /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.1\.1'
+        line: "127.0.1.1 {{ mail_hostname }} {{ mail_hostname.split('.')[0] }}"
+    
+    - name: Install essential packages via package_manager role
+      include_role:
+        name: package_manager
+      vars:
+        package_manager_names:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - software-properties-common
+          - python3-pip
+          - git
+          - vim
+          - htop
+          - net-tools
+          - dnsutils
+          - mailutils
+          - ntp
+        package_manager_state: present
+  
+  tasks:
+    # ========================================
+    # Database Setup (MariaDB + phpMyAdmin)
+    # ========================================
+    - name: Configure MariaDB for mail server
+      include_role:
+        name: mariadb
+      vars:
+        mariadb_root_password: "{{ vault_mariadb_root_password }}"
+        mariadb_bind_address: '127.0.0.1'
+        mariadb_databases:
+          - name: "{{ mail_db_name }}"
+            encoding: utf8mb4
+            collation: utf8mb4_unicode_ci
+        mariadb_users:
+          - name: "{{ mail_db_user }}"
+            host: localhost
+            password: "{{ vault_mail_db_password }}"
+            priv: "{{ mail_db_name }}.*:ALL"
+      tags:
+        - mariadb
+        - database
+    
+    - name: Install phpMyAdmin for database management
+      include_role:
+        name: phpmyadmin
+      vars:
+        phpmyadmin_url_path: "{{ phpmyadmin_url_path | default('phpmyadmin') }}"
+        phpmyadmin_restrict_access: true
+        phpmyadmin_allowed_hosts: "{{ mail_firewall_management_ips }}"
+      tags:
+        - phpmyadmin
+        - database
+    
+    # ========================================
+    # Apache + SSL Setup
+    # ========================================
+    - name: Configure Apache with Let's Encrypt
+      include_role:
+        name: apache
+      vars:
+        apache_certbot_enabled: true
+        apache_certbot_email: "{{ mail_server_admin }}"
+        apache_certbot_challenge_method: "http"
+        apache_vhosts:
+          - server_name: "{{ mail_hostname }}"
+            document_root: "{{ postfixadmin_install_dir }}/public"
+            ssl: true
+            with_letsencrypt: true
+            redirect_https: true
+            url_protection:
+              - path: "/{{ postfixadmin_url_path }}"
+                allowed_ips: "{{ mail_firewall_management_ips }}"
+      tags:
+        - apache
+        - ssl
+        - web
+    
+    # ========================================
+    # Mail User and Storage Setup
+    # ========================================
+    - name: Create mail user group
+      group:
+        name: vmail
+        gid: "{{ mail_gid }}"
+        state: present
+      tags:
+        - mail_user
+    
+    - name: Create mail user
+      user:
+        name: vmail
+        uid: "{{ mail_uid }}"
+        group: vmail
+        shell: /usr/sbin/nologin
+        home: "{{ mail_storage_path }}"
+        createhome: no
+        state: present
+      tags:
+        - mail_user
+    
+    - name: Create mail storage directory
+      file:
+        path: "{{ mail_storage_path }}"
+        state: directory
+        owner: vmail
+        group: vmail
+        mode: '0770'
+      when: mail_server_mode in ['mailboxes', 'both']
+      tags:
+        - mail_user
+    
+    - name: Create domain directory in mail storage
+      file:
+        path: "{{ mail_storage_path }}/{{ mail_domain }}"
+        state: directory
+        owner: vmail
+        group: vmail
+        mode: '0770'
+      when: mail_server_mode in ['mailboxes', 'both']
+      tags:
+        - mail_user
+    
+    # ========================================
+    # Postfix MTA Setup
+    # ========================================
+    - name: Install Postfix packages
+      include_role:
+        name: package_manager
+      vars:
+        package_manager_names:
+          - postfix
+          - postfix-mysql
+          - postfix-policyd-spf-python
+          - libsasl2-modules
+          - sasl2-bin
+        package_manager_state: present
+      tags:
+        - postfix
+        - packages
+    
+    - name: Configure Postfix
+      include_tasks: tasks/configure-postfix.yml
+      tags:
+        - postfix
+    
+    # ========================================
+    # Dovecot IMAP/POP3 Setup (if needed)
+    # ========================================
+    - name: Install and configure Dovecot
+      include_tasks: tasks/configure-dovecot.yml
+      when: mail_server_mode in ['mailboxes', 'both']
+      tags:
+        - dovecot
+    
+    # ========================================
+    # OpenDKIM Setup
+    # ========================================
+    - name: Install OpenDKIM packages
+      include_role:
+        name: package_manager
+      vars:
+        package_manager_names:
+          - opendkim
+          - opendkim-tools
+        package_manager_state: present
+      tags:
+        - dkim
+        - packages
+    
+    - name: Configure OpenDKIM
+      include_tasks: tasks/configure-opendkim.yml
+      tags:
+        - dkim
+    
+    # ========================================
+    # Anti-Spam Setup
+    # ========================================
+    - name: Configure SpamAssassin
+      include_role:
+        name: spamassassin
+      when: spamassassin_enabled | default(true)
+      vars:
+        spamassassin_required_score: "{{ spamassassin_required_score | default(5.0) }}"
+        spamassassin_use_bayes: "{{ spamassassin_use_bayes | default(true) }}"
+      tags:
+        - spamassassin
+        - antispam
+    
+    # ========================================
+    # Anti-Virus Setup
+    # ========================================
+    - name: Configure ClamAV
+      include_role:
+        name: clamav
+      when: clamav_enabled | default(true)
+      vars:
+        clamav_max_scan_size: "{{ clamav_max_scan_size | default('100M') }}"
+        clamav_max_file_size: "{{ clamav_max_file_size | default('25M') }}"
+      tags:
+        - clamav
+        - antivirus
+    
+    # ========================================
+    # PostfixAdmin Setup
+    # ========================================
+    - name: Install PostfixAdmin
+      include_tasks: tasks/configure-postfixadmin.yml
+      tags:
+        - postfixadmin
+    
+    # ========================================
+    # Firewall Setup
+    # ========================================
+    - name: Configure Foomuuri firewall
+      include_role:
+        name: foomuuri
+      vars:
+        foomuuri_zones:
+          - name: "{{ mail_firewall_zone }}"
+            interfaces: ["{{ ansible_default_ipv4.interface | default('eth0') }}"]
+        
+        foomuuri_extra_macros:
+          - name: "mail-submission"
+            protocols:
+              tcp: [587]
+          - name: "mail-smtps"
+            protocols:
+              tcp: [465]
+          - name: "mail-imap"
+            protocols:
+              tcp: [143]
+          - name: "mail-imaps"
+            protocols:
+              tcp: [993]
+          - name: "mail-pop3"
+            protocols:
+              tcp: [110]
+          - name: "mail-pop3s"
+            protocols:
+              tcp: [995]
+          - name: "admin-networks"
+            ips: "{{ mail_firewall_management_ips }}"
+        
+        foomuuri_extra_zone_policies:
+          - from_zone: "{{ mail_firewall_zone }}"
+            to_zone: "localhost"
+            rules:
+              # SMTP for receiving mail
+              - "smtp"
+              
+              # Submission ports for sending mail
+              - "mail-submission"
+              - "mail-smtps"
+              
+              # IMAP/POP3 (only if mailboxes mode)
+              - "{{ 'mail-imap' if mail_server_mode in ['mailboxes', 'both'] else 'comment mail-imap disabled' }}"
+              - "{{ 'mail-imaps' if mail_server_mode in ['mailboxes', 'both'] else 'comment mail-imaps disabled' }}"
+              - "{{ 'mail-pop3' if mail_server_mode in ['mailboxes', 'both'] else 'comment mail-pop3 disabled' }}"
+              - "{{ 'mail-pop3s' if mail_server_mode in ['mailboxes', 'both'] else 'comment mail-pop3s disabled' }}"
+              
+              # Web interfaces (PostfixAdmin, phpMyAdmin)
+              - "https saddr admin-networks"
+              - "http saddr admin-networks"
+              
+              # SSH management
+              - "ssh saddr admin-networks"
+              
+              # Drop everything else
+              - "drop log"
+          
+          - from_zone: "localhost"
+            to_zone: "{{ mail_firewall_zone }}"
+            rules:
+              - "accept"
+      when: mail_firewall_enabled | default(true)
+      tags:
+        - firewall
+        - foomuuri
+  
+  post_tasks:
+    - name: Restart all mail services
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+        enabled: yes
+      loop:
+        - postfix
+        - opendkim
+      tags:
+        - restart
+    
+    - name: Restart Dovecot if mailboxes mode
+      systemd:
+        name: dovecot
+        state: restarted
+        enabled: yes
+      when: mail_server_mode in ['mailboxes', 'both']
+      tags:
+        - restart
+    
+    - name: Display DKIM public key location
+      debug:
+        msg: "DKIM public key is located at /etc/opendkim/keys/{{ mail_domain }}/mail.txt - Add this to your DNS as a TXT record"
+      tags:
+        - info
+    
+    - name: Display PostfixAdmin URL
+      debug:
+        msg: "PostfixAdmin is accessible at https://{{ mail_hostname }}/{{ postfixadmin_url_path }}/"
+      tags:
+        - info
+    
+    - name: Display phpMyAdmin URL
+      debug:
+        msg: "phpMyAdmin is accessible at https://{{ mail_hostname }}/{{ phpmyadmin_url_path | default('phpmyadmin') }}/"
+      tags:
+        - info
+    
+    - name: Display completion message
+      debug:
+        msg:
+          - "==================================================="
+          - "Mail server deployment completed successfully!"
+          - "==================================================="
+          - "Mode: {{ mail_server_mode }}"
+          - ""
+          - "Next steps:"
+          - "1. Add DKIM record to DNS (see /etc/opendkim/keys/{{ mail_domain }}/mail.txt)"
+          - "2. Access PostfixAdmin at https://{{ mail_hostname }}/{{ postfixadmin_url_path }}/"
+          - "3. Complete setup at https://{{ mail_hostname }}/{{ postfixadmin_url_path }}/setup.php"
+          - "{% if mail_server_mode == 'mailboxes' or mail_server_mode == 'both' %}4. Create mailboxes and test email flow{% endif %}"
+          - "{% if mail_server_mode == 'forwarding' or mail_server_mode == 'both' %}4. Create forwarding aliases{% endif %}"
+          - "5. Test with mail-tester.com for 10/10 score"
+          - "==================================================="
+      tags:
+        - info

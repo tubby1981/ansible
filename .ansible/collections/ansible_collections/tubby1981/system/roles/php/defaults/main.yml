@@ -89,5 +89,5 @@ php_enable_ppa: true
 php_ppa_repository: "ppa:ondrej/php"
 
 # Service management
-php_fpm_service_enabled: true
-php_fpm_service_state: started
+php_fpm_service_enabled: false
+php_fpm_service_state: stopped

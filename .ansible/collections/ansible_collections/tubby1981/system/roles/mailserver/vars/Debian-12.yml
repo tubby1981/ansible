@@ -1,0 +1,79 @@
+---
+# Debian 12/13 specific variables
+
+# Time synchronization
+mailserver_time_sync_service: "systemd-timesyncd"
+
+# Package names
+mailserver_debian_essential_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - python3-pip
+  - git
+  - vim
+  - net-tools
+  - dnsutils
+  - mailutils
+  - systemd-timesyncd
+
+# Postfix packages
+mailserver_postfix_packages:
+  - postfix
+  - postfix-mysql
+  - postfix-policyd-spf-python
+  - libsasl2-modules
+  - sasl2-bin
+
+# Postfix version-specific settings
+mailserver_postfix_compatibility_level: "3.6"
+mailserver_postfix_require_postlog: true
+
+# Dovecot packages
+mailserver_dovecot_packages:
+  - dovecot-core
+  - dovecot-imapd
+  - dovecot-pop3d
+  - dovecot-lmtpd
+  - dovecot-mysql
+  - dovecot-sieve
+  - dovecot-managesieved
+
+mailserver_dovecot_config_base_version: "2.3"
+
+mailserver_clamav_packages:
+  - clamav
+  - clamav-daemon
+  - clamav-freshclam
+
+mailserver_spamassassin_packages:
+  - spamassassin
+  - spamd
+  - spamc
+
+# OpenDKIM packages
+mailserver_opendkim_packages:
+  - opendkim
+  - opendkim-tools
+
+# PHP packages for PostfixAdmin
+mailserver_php_packages:
+  - php-fpm
+  - php-mysql
+  - php-mbstring
+  - php-imap
+  - php-json
+  - php-curl
+  - php-zip
+  - php-xml
+  - php-cli
+  - php-intl
+  - php-gd
+  - php-sqlite3
+
+# Webserver service name
+mailserver_apache_service_name: "apache2"
+
+# PHP-FPM service detection
+mailserver_php_fpm_service_detect: true

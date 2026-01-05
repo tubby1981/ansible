@@ -167,6 +167,68 @@ apache_vhosts:
       - "RewriteRule ^/old$ /new [R=301,L]"
 ```
 
+### URL Protection (Access Control per Path)
+
+The role provides fine-grained access control for specific URLs or directories via the `url_protection` option inside each VirtualHost.  
+This is useful for restricting admin areas (e.g., `/wp-admin`), private directories, or custom application endpoints to specific IPv4/IPv6 addresses.
+
+Each entry generates an Apache `<Location>` block with appropriate `Require` rules.
+
+#### Example
+
+```yaml
+apache_vhosts:
+  - server_name: "example.com"
+    document_root: "/var/www/example"
+
+    url_protection:
+      - path: "/wp-admin"
+        allowed_ips:
+          - "203.0.113.10"
+          - "127.0.0.1"
+          - "::1"
+
+      # Public override (e.g., required by WordPress plugins)
+      - path: "/wp-admin/admin-ajax.php"
+        allowed_ips:
+          - "all"
+
+      - path: "/private"
+        allowed_ips:
+          - "192.168.1.0/24"
+          - "2001:db8::/64"
+
+#### Behavior
+
+All protected paths default to:
+
+```apache
+Require all denied
+
+Allowed IPs are added as:
+
+```apache
+Require ip <allowed_ip>
+
+When allowed_ips contains only "all", access is unrestricted:
+
+```apache
+Require all granted
+
+Supports:
+* IPv4
+* IPv6
+* CIDR ranges
+* Application-required overrides (e.g., WordPress AJAX)
+
+Typical Use Cases
+* Restricting WordPress /wp-admin
+* Allowing /wp-admin/admin-ajax.php for plugins (e.g., WordFence, WooCommerce)
+* Securing private directories (/private, /admin, /internal)
+* Protecting API routes
+* Limiting monitoring or debug endpoints to internal IP ranges
+
+
 ## Usage Examples
 
 ### Example 1: Single Domain with HTTP-01

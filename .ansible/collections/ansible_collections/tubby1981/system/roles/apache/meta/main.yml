@@ -31,4 +31,6 @@ galaxy_info:
     - system
     - infrastructure
 
-dependencies: []
+dependencies:
+  - role: php
+    php_install_enabled: true

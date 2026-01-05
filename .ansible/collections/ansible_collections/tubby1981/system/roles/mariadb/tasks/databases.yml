@@ -1,6 +1,8 @@
 ---
 - name: Ensure MySQL databases are present.
   community.mysql.mysql_db:
+    login_user: "{{ mariadb_root_username | default('root') }}"
+    login_password: "{{ mariadb_root_password }}"
     name: "{{ item.name }}"
     collation: "{{ item.collation | default('utf8_general_ci') }}"
     encoding: "{{ item.encoding | default('utf8') }}"

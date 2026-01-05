@@ -1,0 +1,31 @@
+---
+galaxy_info:
+  author: tubby1981
+  description: Ansible role for installing and configuring Roundcube webmail
+  company: handigerecepten.nl
+  license: MIT
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+        - trixie
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+        - noble
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - webmail
+    - roundcube
+    - mail
+    - email
+    - imap
+    - smtp
+    - php
+dependencies: []

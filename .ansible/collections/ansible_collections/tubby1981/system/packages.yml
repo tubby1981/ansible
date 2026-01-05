@@ -1,0 +1,8 @@
+---
+ - name: Configure Linux packages
+   hosts: all
+   gather_facts: true
+   become: yes
+
+   roles:
+    - package_manager

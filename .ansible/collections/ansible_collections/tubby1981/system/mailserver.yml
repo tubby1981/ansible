@@ -1,0 +1,10 @@
+- name: Deploy Complete Mail Server
+  hosts: all
+  become: true
+
+  vars_files:
+    - vault/databases.yml
+    - vault/mail.yml
+  
+  roles:
+    - role: mailserver

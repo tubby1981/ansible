@@ -1,0 +1,45 @@
+---
+# MariaDB root password
+mailserver_mariadb_root_password: "{{ vault_mariadb_root_password }}"
+
+# SSL/TLS Configuration
+# -----------------------------------------------------------
+mailserver_ssl_certificate: "/etc/letsencrypt/live/{{ mailserver_hostname }}/fullchain.pem"
+mailserver_ssl_certificate_key: "/etc/letsencrypt/live/{{ mailserver_hostname }}/privkey.pem"
+
+# DKIM Configuration
+# ------------------
+mailserver_opendkim_selector: "mail"
+mailserver_opendkim_key_size: 2048
+
+# phpMyAdmin Configuration
+# -----------------------------------------------
+mailserver_phpmyadmin_allowed_hosts: "{{ mailserver_firewall_management_ips }}"
+
+# SPF Record (for documentation)
+# ------------------------------
+mailserver_spf_record: "v=spf1 mx ~all"
+
+# DMARC Record (for documentation)
+# ---------------------------------
+mailserver_dmarc_record: "v=DMARC1; p=quarantine; rua=mailto:{{ mailserver_server_admin }}"
+
+# Postfix Configuration
+# ---------------------
+mailserver_postfix_myhostname: "{{ mailserver_hostname }}"
+mailserver_postfix_mydomain: "{{ mailserver_domain }}"
+mailserver_postfix_myorigin: "$mydomain"
+mailserver_postfix_inet_interfaces: "all"
+mailserver_postfix_inet_protocols: "ipv4"
+mailserver_postfix_message_size_limit: 52428800  # 50MB
+
+# Dovecot Configuration
+# ---------------------------------------------------------------------------------
+mailserver_dovecot_mail_driver: "maildir"
+mailserver_dovecot_mail_path: "~/Maildir"
+mailserver_dovecot_mail_home: "{{ mailserver_storage_path }}/%{user|domain}/%{user|username}"
+mailserver_dovecot_protocols: "imap pop3 lmtp"
+
+# Mail Forwarding Configuration
+# -----------------------------------------------------------------------------------------
+mailserver_mail_forwarding_enabled: "{{ mailserver_server_mode in ['forwarding', 'both'] }}"

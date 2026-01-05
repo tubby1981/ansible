@@ -1,6 +1,8 @@
 ---
 - name: Ensure MySQL users are present.
   community.mysql.mysql_user:
+    login_user: "{{ mariadb_root_username | default('root') }}"
+    login_password: "{{ mariadb_root_password }}"
     name: "{{ item.name }}"
     host: "{{ item.host | default('localhost') }}"
     password: "{{ item.password }}"

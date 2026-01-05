@@ -6,6 +6,7 @@ __mariadb_packages:
   - default-mysql-client
   - python3-mysqldb
   - mariadb-backup
+  - python3-pymysql
 mariadb_log_file_group: adm
 __mariadb_slow_query_log_file: /var/log/mysql/mariadb-slow.log
 __mariadb_log_error: /var/log/mysql/error.log

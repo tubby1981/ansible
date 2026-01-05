@@ -47,6 +47,7 @@
     'ALTER USER "{{ mariadb_root_username }}"@"{{ item }}"
     IDENTIFIED WITH mariadb_native_password BY "{{ mariadb_root_password }}"; FLUSH PRIVILEGES;'
   with_items: "{{ mariadb_root_hosts.stdout_lines | default([]) }}"
+  register: update_root_password # <-- VOEG DEZE REGEL TOE
   changed_when: update_root_password.rc == 0
   when: >
     ((mariadb_install_packages | bool) or mariadb_root_password_update)
@@ -58,6 +59,7 @@
     mysql -NBe
     'SET PASSWORD FOR "{{ mariadb_root_username }}"@"{{ item }}" = PASSWORD("{{ mariadb_root_password }}"); FLUSH PRIVILEGES;'
   with_items: "{{ mariadb_root_hosts.stdout_lines | default([]) }}"
+  register: update_root_password_legacy # <-- VOEG DEZE REGEL TOE
   changed_when: update_root_password_legacy.rc == 0
   when: >
     ((mariadb_install_packages | bool) or mariadb_root_password_update)
@@ -90,3 +92,5 @@
   community.mysql.mysql_db:
     name: 'test'
     state: absent
+    login_user: "{{ mariadb_root_username }}"
+    login_password: "{{ mariadb_root_password }}"

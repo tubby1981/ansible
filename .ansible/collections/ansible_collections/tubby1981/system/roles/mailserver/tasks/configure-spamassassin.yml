@@ -1,0 +1,82 @@
+---
+# SpamAssassin installation and configuration
+
+- name: Install SpamAssassin packages via package_manager
+  ansible.builtin.include_role:
+    name: package_manager
+  vars:
+    package_manager_names: "{{ mailserver_spamassassin_packages | default(['spamassassin', 'spamd', 'spamc']) }}"
+    package_manager_state: present
+  tags: [spamassassin, antispam]
+
+- name: Create SpamAssassin user
+  ansible.builtin.user:
+    name: spamd
+    system: true
+    shell: /usr/sbin/nologin
+    home: /var/lib/spamassassin
+    createhome: true
+  tags: [spamassassin, antispam]
+
+- name: Configure SpamAssassin
+  ansible.builtin.template:
+    src: spamassassin/local.cf.j2
+    dest: /etc/spamassassin/local.cf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart spamd service
+  tags: [spamassassin, antispam]
+
+- name: Configure SpamAssassin daemon options in the correct file
+  ansible.builtin.lineinfile:
+    path: /etc/default/spamd
+    regexp: '^OPTIONS='
+    line: 'OPTIONS="--create-prefs --max-children 5 --helper-home-dir --username spamd"'
+  notify:
+    - Restart spamd service
+  tags: [spamassassin, antispam]
+
+- name: Update SpamAssassin rules
+  ansible.builtin.command: sa-update
+  register: mailserver_sa_update
+  # sa-update exit codes: 0 = updates found, 1 = no updates, 4 = lint check failed
+  changed_when: mailserver_sa_update.rc == 0
+  failed_when: mailserver_sa_update.rc not in [0, 1]
+  tags: [spamassassin, antispam]
+
+- name: Compile SpamAssassin rules
+  ansible.builtin.command: sa-compile
+  when: mailserver_sa_update.rc == 0
+  register: mailserver_sa_compile
+  changed_when: true
+  notify: Restart spamd service
+  tags: [spamassassin, antispam]
+
+- name: Configure Postfix to use SpamAssassin
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/master.cf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - SpamAssassin"
+    block: |
+      # SpamAssassin filter
+      spamassassin unix -       n       n       -       -       pipe
+        user=spamd argv=/usr/bin/spamc -f -e /usr/sbin/sendmail -oi -f ${sender} ${recipient}
+    insertafter: EOF
+  notify: Restart postfix
+  tags: [spamassassin, antispam]
+
+- name: Create SpamAssassin update cron job
+  ansible.builtin.cron:
+    name: "Update SpamAssassin rules"
+    minute: "0"
+    hour: "2"
+    job: "sa-update && sa-compile && systemctl reload spamd"
+    user: root
+  tags: [spamassassin, antispam]
+
+- name: Start and enable SpamAssassin
+  ansible.builtin.systemd:
+    name: spamd
+    state: started
+    enabled: true
+  tags: [spamassassin, antispam]

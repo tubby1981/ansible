@@ -151,7 +151,7 @@ foomuuri_macros:
 
 ```yaml
 # Default policy for localhost zone
-foomuuri_default_localhost_policy:
+foomuuri_zone_policies:
   - from_zone: "public"
     to_zone: "localhost"
     rules:
@@ -205,35 +205,6 @@ foomuuri_extra_zone_policies:
       - "template web_services"
       - "ssh saddr admin-networks"
       - "drop log"
-```
-
-### Monitoring Services
-
-```yaml
-foomuuri_monitoring_enabled: true
-foomuuri_monitoring_services:
-  - name: "nagios"
-    port: "tcp 5666"
-    sources:
-      public: ["203.0.113.10"]
-      management: ["10.0.0.10"]
-  
-  - name: "snmp"
-    port: "udp 161"
-    sources:
-      management: ["10.0.0.0/8"]
-  
-  - name: "checkmk-agent"
-    port: "tcp 6556"
-    sources:
-      public: ["monitoring.example.com"]
-
-# Management access
-foomuuri_management_enabled: true
-foomuuri_management_services: ["ssh", "ping"]
-foomuuri_management_sources:
-  - "192.168.1.0/24"
-  - "10.0.0.0/8"
 ```
 
 ### NAT Configuration

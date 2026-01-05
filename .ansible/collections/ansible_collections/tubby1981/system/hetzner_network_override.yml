@@ -1,0 +1,9 @@
+- name: Override Hetzner Network Cloud Configuration
+  hosts: all
+  become: true
+
+  vars_files:
+    - vault/hetzner.yml
+  
+  roles:
+    - role: hetzner_network_override

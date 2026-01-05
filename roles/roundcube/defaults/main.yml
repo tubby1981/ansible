@@ -1,0 +1,108 @@
+---
+# Roundcube version
+roundcube_version: "1.6.7"
+# Gebruik '>' om de lange URL op te breken en line-length fouten te voorkomen
+roundcube_download_url: >-
+  https://github.com/roundcube/roundcubemail/releases/download/{{ roundcube_version }}/roundcubemail-{{ roundcube_version }}-complete.tar.gz
+
+# Installation paths
+roundcube_install_dir: "/var/www/roundcube"
+roundcube_temp_dir: "/tmp/roundcube"
+
+# Webserver configuration
+roundcube_webserver: "apache"  # apache of nginx
+roundcube_vhost_enabled: true
+roundcube_server_name: "webmail.example.com"
+roundcube_enable_ssl: true
+roundcube_ssl_certificate: "/etc/ssl/certs/ssl-cert-snakeoil.pem"
+roundcube_ssl_certificate_key: "/etc/ssl/private/ssl-cert-snakeoil.key"
+
+# Integration with existing roles
+roundcube_use_existing_php: true
+roundcube_use_existing_apache: true
+roundcube_use_existing_mariadb: true
+
+# Database configuration
+roundcube_database_type: "mysql"
+roundcube_database_host: "{{ mariadb_bind_address | default('localhost') }}"
+roundcube_database_port: "{{ mariadb_port | default(3306) }}"
+roundcube_database_name: "roundcube"
+roundcube_database_user: "roundcube"
+roundcube_database_password: "changeme"  # Override met vault!
+
+# IMAP/SMTP configuration
+roundcube_default_host: "ssl://localhost"
+roundcube_default_port: 993
+roundcube_smtp_server: "tls://localhost"
+roundcube_smtp_port: 587
+roundcube_smtp_user: "%u"
+roundcube_smtp_pass: "%p"
+
+# Roundcube default settings
+roundcube_product_name: "Webmail"
+roundcube_support_url: ""
+roundcube_skin: "elastic"
+roundcube_language: "nl_NL"
+roundcube_timezone: "{{ php_timezone | default('Europe/Amsterdam') }}"
+
+# Password configuration
+roundcube_password_charset: "UTF-8"
+roundcube_password_minimum_length: 8
+roundcube_password_require_digit: true
+roundcube_password_require_special: true
+
+# Session configuration
+roundcube_session_lifetime: 30
+roundcube_session_domain: ""
+roundcube_session_path: "/"
+
+# Upload limit
+roundcube_upload_max_filesize: "{{ php_upload_max_filesize | default('10M') }}"
+roundcube_post_max_size: "{{ php_post_max_size | default('10M') }}"
+
+# Logging
+roundcube_log_driver: "file"
+roundcube_log_dir: "logs/"
+roundcube_debug_level: 1
+
+# Plugins
+roundcube_plugins:
+  - archive
+  - zipdownload
+  - managesieve
+  - password
+  - enigma
+
+# Plugin: managesieve
+roundcube_managesieve_enabled: true
+roundcube_managesieve_host: "localhost"
+roundcube_managesieve_port: 4190
+roundcube_managesieve_usetls: true
+
+# Plugin: password
+roundcube_password_enabled: true
+roundcube_password_driver: "sql"
+# Let op: de DSN gebruikt nu ook de geprefixte database variabelen
+roundcube_password_db_dsn: >-
+  mysql://{{ roundcube_database_user }}:{{ roundcube_database_password }}@{{ roundcube_database_host }}/postfixadmin
+roundcube_password_query: "UPDATE mailbox SET password=%c WHERE username=%u"
+roundcube_password_crypt_hash: "bcrypt"
+
+# Plugin: enigma
+roundcube_enigma_enabled: false
+roundcube_enigma_pgp_homedir: "{{ roundcube_install_dir }}/enigma/home"
+
+# Composer dependencies
+roundcube_install_composer_deps: true
+
+# Security
+roundcube_des_key: ""
+roundcube_enable_installer: false
+
+# Extra PHP extensions
+roundcube_required_php_extensions:
+  - "php{{ php_version | default('8.4') }}-intl"
+  - "php{{ php_version | default('8.4') }}-ldap"
+  - "php{{ php_version | default('8.4') }}-pspell"
+  - "php{{ php_version | default('8.4') }}-enchant"
+  - "php{{ php_version | default('8.4') }}-imagick"

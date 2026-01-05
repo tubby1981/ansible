@@ -1,0 +1,26 @@
+---
+# Debian/Ubuntu specific variables for Roundcube
+
+roundcube_additional_packages:
+  - composer
+  - unzip
+  - wget
+
+roundcube_user: "{{ php_fpm_pool_user | default('www-data') }}"
+roundcube_group: "{{ php_fpm_pool_group | default('www-data') }}"
+
+# Apache specific
+roundcube_apache_service: "{{ php_webserver_name | default('apache2') }}"
+roundcube_apache_config_dir: /etc/apache2
+roundcube_apache_vhost_dir: /etc/apache2/sites-available
+roundcube_apache_vhost_enabled_dir: /etc/apache2/sites-enabled
+
+# Nginx specific
+roundcube_nginx_service: nginx
+roundcube_nginx_config_dir: /etc/nginx
+roundcube_nginx_vhost_dir: /etc/nginx/sites-available
+roundcube_nginx_vhost_enabled_dir: /etc/nginx/sites-enabled
+
+# PHP-FPM
+roundcube_php_fpm_service: "php{{ php_version | default('8.4') }}-fpm"
+roundcube_php_fpm_pool_dir: "/etc/php/{{ php_version | default('8.4') }}/fpm/pool.d"

@@ -11,9 +11,8 @@
     - Validate foomuuri config
     - Restart foomuuri
   register: foomuuri_config_result
-  changed_when: false
 
-- name: Create raw nftables rule files
+- name: 1. Create raw nftables rule files (If Enabled)
   ansible.builtin.copy:
     content: "{{ item.content }}"
     dest: "{{ foomuuri_config_path | default('/etc/foomuuri') }}/{{ item.name }}"
@@ -22,8 +21,17 @@
     mode: '0644'
     backup: true
   loop: "{{ foomuuri_raw_nft_files + foomuuri_extra_raw_nft_files }}"
-  when: foomuuri_raw_nft_files or foomuuri_extra_raw_nft_files
-  changed_when: false
+  when: (foomuuri_raw_nft_files or foomuuri_extra_raw_nft_files) and item.enabled | default(true)
+  notify:
+    - Validate foomuuri config
+    - Restart foomuuri
+
+- name: 2. Remove raw nftables rule files (If Disabled)
+  ansible.builtin.file:
+    path: "{{ foomuuri_config_path | default('/etc/foomuuri') }}/{{ item.name }}"
+    state: absent # Dit zorgt ervoor dat het bestand wordt verwijderd
+  loop: "{{ foomuuri_raw_nft_files + foomuuri_extra_raw_nft_files }}"
+  when: (foomuuri_raw_nft_files or foomuuri_extra_raw_nft_files) and item.enabled is defined and item.enabled == false
   notify:
     - Validate foomuuri config
     - Restart foomuuri
