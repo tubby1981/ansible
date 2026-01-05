@@ -23,6 +23,7 @@
 # 4. Configure PostfixAdmin so it can find the database
 - name: Check if PostfixAdmin admin already exists
   ansible.builtin.shell: |
+    set -o pipefail
     mysql -u {{ mailserver_db_user }} -p'{{ mailserver_db_password }}' {{ mailserver_db_name }} \
       -e "SELECT 1 FROM admin WHERE username='{{ mailserver_postfixadmin_admin_email }}' LIMIT 1;" \
       | grep -q 1

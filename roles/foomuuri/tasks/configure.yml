@@ -31,7 +31,7 @@
     path: "{{ foomuuri_config_path | default('/etc/foomuuri') }}/{{ item.name }}"
     state: absent # Dit zorgt ervoor dat het bestand wordt verwijderd
   loop: "{{ foomuuri_raw_nft_files + foomuuri_extra_raw_nft_files }}"
-  when: (foomuuri_raw_nft_files or foomuuri_extra_raw_nft_files) and item.enabled is defined and item.enabled == false
+  when: (foomuuri_raw_nft_files or foomuuri_extra_raw_nft_files) and item.enabled is defined and not item.enabled
   notify:
     - Validate foomuuri config
     - Restart foomuuri
